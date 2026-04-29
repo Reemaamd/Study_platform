@@ -4,7 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Document(collection = "objectives")
 @Data
@@ -17,11 +17,12 @@ public class Objective {
 
     private String userId;
     private String subjectId;
+    private String title; // ✅ AJOUT
 
     private int weeklyGoal;
     private int progress;
     private int priority;
 
-    private Date weekStartDate;
-    private Date weekEndDate;
+    private LocalDate weekStartDate;
+    private LocalDate weekEndDate;
 }
