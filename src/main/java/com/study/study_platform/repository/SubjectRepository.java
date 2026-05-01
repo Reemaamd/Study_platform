@@ -8,5 +8,9 @@ import java.util.List;
 public interface SubjectRepository extends MongoRepository<Subject, String> {
 
     List<Subject> findByUserId(String userId);
-    List<Subject> findByName(String name);
+
+    List<Subject> findByNameAndUserId(String name, String userId); // ✅ corrigé
+
+    boolean existsByNameAndUserId(String name, String userId);
+    long countByUserId(String userId);
 }
