@@ -62,4 +62,3 @@ public class JwtUtils {
                 .getBody();
     }
 }
-
