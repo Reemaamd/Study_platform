@@ -14,18 +14,30 @@ public class TestAuthRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
-        // 🔥 simuler un login (comme si user est authentifié)
-        String username = "amal_nekh";
-        String role = "ADMIN";
+        // 🔥 USER NORMAL
+        String userUsername = "test123";   // adapte selon ta DB
+        String userRole = "USER";
 
-        // 🔥 générer token directement
-        String token = jwtUtils.generateToken(username, role);
+        String userToken = jwtUtils.generateToken(userUsername, userRole);
+
+        // 🔥 ADMIN
+        String adminUsername = "amal_nekh";  // adapte selon ta DB
+        String adminRole = "ADMIN";
+
+        String adminToken = jwtUtils.generateToken(adminUsername, adminRole);
 
         System.out.println("===================================");
-        System.out.println("TOKEN JWT POUR TEST:");
-        System.out.println(token);
+
+        System.out.println("🔵 USER TOKEN:");
+        System.out.println(userToken);
+
+        System.out.println("-----------------------------------");
+
+        System.out.println("🔴 ADMIN TOKEN:");
+        System.out.println(adminToken);
+
         System.out.println("===================================");
     }
 }

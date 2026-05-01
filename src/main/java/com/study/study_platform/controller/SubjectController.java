@@ -42,4 +42,17 @@ public class SubjectController {
     public List<SubjectResponseDTO> getByName(@RequestParam String name) {
         return service.getByName(name);
     }
+
+    @PutMapping("/{id}")
+    public SubjectResponseDTO update(@PathVariable String id, @RequestBody SubjectDTO dto) {
+        return service.updateSubject(id, dto);
+    }
+    @GetMapping("/count")
+    public long countMySubjects() {
+        return service.countSubjectsForCurrentUser();
+    }
+    @GetMapping("/admin/count")
+    public long countAll() {
+        return service.countAllSubjects();
+    }
 }

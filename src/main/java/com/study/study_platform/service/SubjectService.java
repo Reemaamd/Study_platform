@@ -104,6 +104,56 @@ public class SubjectService {
         repository.deleteById(id);
     }
 
+    public SubjectResponseDTO updateSubject(String id, SubjectDTO dto) {
+
+        checkNotAdmin(); // ❌ admin interdit
+
+        Utilisateur user = getCurrentUser();
+
+        Subject subject = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
+
+        // 🔐 vérifier ownership
+        if (!subject.getUserId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        // 🔥 anti-doublon
+        if (!subject.getName().equals(dto.getName()) &&
+                repository.existsByNameAndUserId(dto.getName(), user.getId())) {
+            throw new RuntimeException("Subject already exists");
+        }
+
+        subject.setName(dto.getName());
+
+        return mapToDTO(repository.save(subject));
+    }
+
+    public long countSubjectsForCurrentUser() {
+
+        checkNotAdmin(); // ❌ admin interdit
+
+        Utilisateur user = getCurrentUser();
+
+        return repository.countByUserId(user.getId());
+    }
+
+    public long countAllSubjects() {
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        if (!role.equals("ROLE_ADMIN")) {
+            throw new RuntimeException("Only admin can access this");
+        }
+
+        return repository.count();
+    }
+
     // 🔥 Mapping DTO
     private SubjectResponseDTO mapToDTO(Subject subject) {
 

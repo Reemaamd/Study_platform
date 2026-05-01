@@ -12,4 +12,5 @@ public interface SubjectRepository extends MongoRepository<Subject, String> {
     List<Subject> findByNameAndUserId(String name, String userId); // ✅ corrigé
 
     boolean existsByNameAndUserId(String name, String userId);
+    long countByUserId(String userId);
 }
