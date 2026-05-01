@@ -16,6 +16,7 @@ public class Utilisateur {
 
     @Id
     private String id;
+    private boolean passwordMustChange;  // <-- forcer changement mot de passe
 
     private String name;
     private String username;
