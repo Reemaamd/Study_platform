@@ -7,6 +7,7 @@ import com.study.study_platform.model.document.Role;
 import com.study.study_platform.model.document.Utilisateur;
 import com.study.study_platform.repository.UserRepository;
 import com.study.study_platform.security.JwtUtils;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -62,8 +64,14 @@ public class AuthController {
         if (utilisateurRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
+        if (utilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already exists");
+        }
+
 
         Utilisateur user = new Utilisateur();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
@@ -72,5 +80,7 @@ public class AuthController {
 
         return ResponseEntity.ok("User registered successfully");
     }
+
+
 }
 
