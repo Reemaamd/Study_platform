@@ -23,7 +23,7 @@ public class AdminController {
     private final UserMapper userMapper;
 
 
-    // Créer médecin / secrétaire
+    
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest request) {
         Utilisateur user = utilisateurService.createUtilisateur(request);
