@@ -17,7 +17,7 @@ public class Objective {
 
     private String userId;
     private String subjectId;
-    private String title; // ✅ AJOUT
+    private String title;
 
     private int weeklyGoal;
     private int progress;

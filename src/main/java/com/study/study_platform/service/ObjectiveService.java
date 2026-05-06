@@ -5,6 +5,7 @@ import com.study.study_platform.dto.ObjectiveRequest;
 import com.study.study_platform.exception.ObjectiveNotFoundException;
 import com.study.study_platform.mapper.ObjectiveMapper;
 import com.study.study_platform.model.document.Objective;
+import com.study.study_platform.model.document.StudySession;
 import com.study.study_platform.model.document.Subject;
 import com.study.study_platform.repository.ObjectiveRepository;
 import com.study.study_platform.repository.SubjectRepository;
@@ -68,9 +69,20 @@ public class ObjectiveService {
 
     // CREATE
     public ObjectiveDTO create(ObjectiveRequest request) {
+
         String userId = getUserId();
 
         Objective obj = objectiveMapper.toEntity(request, userId);
+
+        // ✅ AUTO WEEK CALCULATION
+        LocalDate today = LocalDate.now();
+
+        LocalDate start = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate end = today.with(java.time.DayOfWeek.SUNDAY);
+
+        obj.setWeekStartDate(start);
+        obj.setWeekEndDate(end);
+
         objectiveRepository.save(obj);
 
         Map<String, Subject> subjectMap =

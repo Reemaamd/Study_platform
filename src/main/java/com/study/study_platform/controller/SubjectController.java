@@ -5,12 +5,14 @@ import com.study.study_platform.dto.SubjectResponseDTO;
 import com.study.study_platform.model.document.Subject;
 import com.study.study_platform.service.SubjectService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/subjects")
+@PreAuthorize("hasRole('USER')")
 public class SubjectController {
 
     private final SubjectService service;
