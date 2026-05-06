@@ -12,6 +12,8 @@ public class UserMapper {
         return Utilisateur.builder()
                 .name(request.getName())
                 .username(request.getUsername())
+                .email(request.getEmail())
+                .password(request.getPassword())
                 .role(request.getRole())
                 .build();
     }

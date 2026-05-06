@@ -23,8 +23,6 @@ public class ObjectiveMapper {
         obj.setWeeklyGoal(request.getWeeklyGoal());
         obj.setPriority(request.getPriority());
         obj.setTitle(request.getTitle()); // ✅ AJOUT
-        obj.setWeekStartDate(request.getWeekStartDate());
-        obj.setWeekEndDate(request.getWeekEndDate());
         obj.setProgress(0);
 
         return obj;

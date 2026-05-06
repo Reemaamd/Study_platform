@@ -17,6 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/objectives")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('USER')")
 public class ObjectiveController {
 
     private final ObjectiveService objectiveService;
