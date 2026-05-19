@@ -4,6 +4,7 @@ import com.study.study_platform.model.document.StudySession;
 import com.study.study_platform.service.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,13 @@ public class StudySessionController {
         return service.generateWeeklyPlan(userDetails.getUsername());
     }
     @PutMapping("/{id}/complete")
-    public StudySession completeSession(@PathVariable String id) {
-        return service.completeSession(id);
+    public StudySession completeSession(
+            @PathVariable String id,
+            Authentication authentication
+    ) {
+
+        String username = authentication.getName();
+
+        return service.completeSession(id, username);
     }
 }

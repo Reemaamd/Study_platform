@@ -1,0 +1,22 @@
+import { Routes } from '@angular/router';
+// Use lazy-loaded standalone components to avoid direct imports that may fail
+
+export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./landing/landing.component').then(m => m.LandingComponent),
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent),
+  },
+  {
+    path: '**',
+    redirectTo: '',
+  }
+
+];
