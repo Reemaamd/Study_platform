@@ -1,0 +1,110 @@
+<div class="auth-layout auth-layout--signup">
+
+  <!-- Panneau gauche : formulaire -->
+  <div class="auth-panel auth-panel--form">
+    <div class="form-wrapper">
+
+      <p class="form-eyebrow">CRÉER UN COMPTE</p>
+      <h1 class="form-title">Rejoindre <em>l'atelier</em>.</h1>
+
+      <form (ngSubmit)="onRegister()" novalidate>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-name">NOM</label>
+          <input
+            id="reg-name"
+            class="field-input"
+            type="text"
+            [(ngModel)]="name"
+            name="name"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-email">EMAIL</label>
+          <input
+            id="reg-email"
+            class="field-input"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-username">NOM D'UTILISATEUR</label>
+          <input
+            id="reg-username"
+            class="field-input"
+            type="text"
+            [(ngModel)]="username"
+            name="username"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-password">MOT DE PASSE</label>
+          <input
+            id="reg-password"
+            class="field-input"
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-role">RÔLE</label>
+          <div class="select-wrapper">
+            <select
+              id="reg-role"
+              class="field-input field-input--select"
+              [(ngModel)]="role"
+              name="role"
+            >
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+            <span class="select-chevron">↓</span>
+          </div>
+        </div>
+
+        <button class="btn-submit" type="submit">
+          Commencer <span class="btn-arrow">→</span>
+        </button>
+
+      </form>
+
+      <p class="form-footer-link" *ngIf="successMessage">
+        <span class="msg msg--success">{{ successMessage }}</span>
+      </p>
+
+      <p class="form-footer-link" *ngIf="errorMessage">
+        <span class="msg msg--error">{{ errorMessage }}</span>
+      </p>
+
+      <p class="form-footer-link">
+        Déjà inscrit ?&nbsp;<a routerLink="/login">Se connecter</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- Panneau droit : branding clair -->
+  <div class="auth-panel auth-panel--brand auth-panel--sage">
+    <div class="brand-bottom">
+      <blockquote class="brand-quote brand-quote--dark">
+        Une semaine,<br><em>ré-écrite.</em>
+      </blockquote>
+    </div>
+  </div>
+
+</div>

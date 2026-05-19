@@ -1,0 +1,173 @@
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" routerLink="/">Loci.</a>
+
+  <div class="nav-actions">
+    <button class="btn-ghost" routerLink="/login">
+      Se connecter
+    </button>
+
+    <button class="btn-dark" routerLink="/register">
+      Entrer dans l'atelier ↗
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+
+    <p class="hero-label">
+      <span class="dot"></span> ATELIER D'ÉTUDE · SAISON 04
+    </p>
+
+    <h1 class="hero-title">
+      Étudier<br />
+      <em>avec</em> intention.
+    </h1>
+
+    <p class="hero-desc">
+      Loci transforme votre semaine en un plan vivant — vos matières, vos pics d'énergie,
+      les sessions de vos cercles. Une IA douce orchestre, vous gardez la main.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn-dark" routerLink="/register">
+        Commencer maintenant ↗
+      </button>
+
+      <button class="btn-outline">
+        Voir un planning d'exemple
+      </button>
+    </div>
+
+    <div class="hero-stats">
+      <div>
+        <strong>12 400+</strong>
+        <span>étudiants concentrés</span>
+      </div>
+
+      <div>
+        <strong>38h</strong>
+        <span>économisées / mois</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANNING CARD -->
+  <div class="hero-card-wrapper">
+
+    <div class="streak-badge">
+      <span class="streak-label">STREAK</span>
+      <span class="streak-value">14 jours</span>
+    </div>
+
+    <div class="planning-card">
+
+      <div class="card-header">
+        <span class="card-date">LUN · 18 MARS</span>
+        <span class="card-focus">⚡ FOCUS MODE</span>
+      </div>
+
+      @for (session of sessions; track $index) {
+        <div class="session" [ngClass]="session.color">
+          <div class="session-time">{{ session.time }}</div>
+          <div class="session-block">
+            <div class="session-title">{{ session.title }}</div>
+            <div class="session-sub">{{ session.sub }}</div>
+          </div>
+        </div>
+      } @empty {
+        <p>Aucune session disponible</p>
+      }
+
+      <div class="card-ai-row">
+        <span>✦ L'IA propose 1h45 de rab pour Algèbre</span>
+        <button class="btn-apply">
+          Appliquer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+
+  <div class="features-header">
+    <h2 class="features-title">Quatre gestes, une méthode.</h2>
+    <p class="features-desc">
+      Un outil pour chaque temps de l'étude. Aucune cérémonie superflue.
+    </p>
+  </div>
+
+  <div class="features-grid">
+
+    @for (feature of features; track $index) {
+      <div class="feature-card" [ngClass]="feature.color" [class.large]="feature.large">
+
+        <div class="feature-tag">
+          <span class="feature-icon">{{ feature.icon }}</span>
+          <span>{{ feature.num }} · {{ feature.tag }}</span>
+        </div>
+
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.desc }}</p>
+
+      </div>
+    } @empty {
+      <p>Aucune fonctionnalité disponible</p>
+    }
+
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+
+  <div class="quote-mark">❝</div>
+
+  <blockquote class="quote-text">
+    "L'étude n'est pas une <em>course</em>. C'est un atelier — où l'on revient, on ajuste, on recommence."
+  </blockquote>
+
+  <p class="quote-source">— MANIFESTE LOCI</p>
+
+</section>
+
+<!-- CTA -->
+<section class="cta-banner">
+
+  <div class="cta-left">
+    <h2>
+      Votre semaine,<br />
+      <em>ré-écrite.</em>
+    </h2>
+  </div>
+
+  <div class="cta-right">
+
+    <p>
+      Rejoignez l'atelier en moins d'une minute. Pas de carte, pas de tutoriel — un planning vous attend.
+    </p>
+
+    <div class="cta-actions">
+      <button class="btn-light" routerLink="/register">
+        Créer mon compte ↗
+      </button>
+
+      <button class="btn-dark-outline">
+        Explorer la démo
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>© 2026 LOCI · ATELIER D'ÉTUDE</span>
+  <span>FAIT AVEC ATTENTION · PARIS / CASABLANCA</span>
+</footer>
