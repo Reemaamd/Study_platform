@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,35 @@ public class StudySessionService {
 
         String userId = user.getId();
         LocalDate today = LocalDate.now();
+        LocalDate currentWeekStart = today.with(DayOfWeek.MONDAY);
+        LocalDate currentWeekEnd   = today.with(DayOfWeek.SUNDAY);
 
+        // ==============================
+        // LOAD CURRENT WEEK SESSIONS
+        // ==============================
+        List<StudySession> allSessions = repository.findByUserId(userId)
+                .stream()
+                .filter(s -> {
+                    LocalDate d = s.getStartTime().toLocalDate();
+                    return !d.isBefore(currentWeekStart)
+                            && !d.isAfter(currentWeekEnd);
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // ==============================
+        // DELETE PLANNED → regenerate cleanly
+        // DONE sessions preserved
+        // ==============================
+        List<StudySession> plannedToDelete = allSessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.PLANNED)
+                .toList();
+
+        repository.deleteAll(plannedToDelete);
+        allSessions.removeAll(plannedToDelete);
+
+        // ==============================
+        // LOAD OBJECTIVES
+        // ==============================
         List<Objective> objectives = objectiveRepository.findByUserId(userId)
                 .stream()
                 .filter(o ->
@@ -51,54 +81,73 @@ public class StudySessionService {
 
         List<StudySession> generatedSessions = new ArrayList<>();
 
+        // ==============================
+        // GENERATION LOOP
+        // ==============================
         for (Objective obj : objectives) {
 
-            LocalDate weekStart = obj.getWeekStartDate();
-            LocalDate weekEnd = obj.getWeekEndDate();
-
-            // ✅ IMPORTANT FIX: filter sessions by subject + week
-            List<StudySession> existingSessions = repository.findByUserId(userId)
-                    .stream()
-                    .filter(s ->
-                            s.getSubjectId().equals(obj.getSubjectId()) &&
-                                    !s.getStartTime().toLocalDate().isBefore(weekStart) &&
-                                    !s.getStartTime().toLocalDate().isAfter(weekEnd)
+            // ==============================
+            // DONE hours this week for this subject
+            // ==============================
+            int doneHours = allSessions.stream()
+                    .filter(s -> s.getSubjectId().equals(obj.getSubjectId()))
+                    .filter(s -> {
+                        LocalDate d = s.getStartTime().toLocalDate();
+                        return !d.isBefore(currentWeekStart)
+                                && !d.isAfter(currentWeekEnd);
+                    })
+                    .mapToInt(s ->
+                            (int) Duration.between(
+                                    s.getStartTime(),
+                                    s.getEndTime()
+                            ).toHours()
                     )
-                    .toList();
-
-            // ✅ calc remaining hours correctly
-            int alreadyPlanned = existingSessions.stream()
-                    .mapToInt(s -> (int) Duration.between(s.getStartTime(), s.getEndTime()).toHours())
                     .sum();
 
-            int remaining = obj.getWeeklyGoal() - alreadyPlanned;
+            int remaining = obj.getWeeklyGoal() - obj.getProgress();
 
             if (remaining <= 0) continue;
 
-            for (Availability av : user.getAvailabilities()) {
+            // ==============================
+            // SORT AVAILABILITIES BY DAY ORDER
+            // ==============================
+            List<Availability> sortedAvailabilities = user.getAvailabilities()
+                    .stream()
+                    .sorted(Comparator.comparingInt(av ->
+                            DayOfWeek.valueOf(av.getDay().name()).getValue()
+                    ))
+                    .toList();
 
-                DayOfWeek day = DayOfWeek.valueOf(av.getDay().name());
+            for (Availability av : sortedAvailabilities) {
 
-                LocalDate sessionDate = weekStart.with(day);
+                if (remaining <= 0) break;
 
-                if (sessionDate.isBefore(weekStart) || sessionDate.isAfter(weekEnd)) {
-                    continue;
-                }
+                DayOfWeek targetDay = DayOfWeek.valueOf(av.getDay().name());
 
-                LocalTime startTime = LocalTime.parse(av.getStartTime());
-                LocalTime endTime = LocalTime.parse(av.getEndTime());
+                // find the date of this day in current week
+                LocalDate sessionDate = currentWeekStart
+                        .with(TemporalAdjusters.nextOrSame(targetDay));
 
-                LocalDateTime start = sessionDate.atTime(startTime);
-                LocalDateTime limit = sessionDate.atTime(endTime);
+                if (sessionDate.isAfter(currentWeekEnd)) continue;
+
+                LocalDateTime start = sessionDate.atTime(
+                        LocalTime.parse(av.getStartTime()));
+                LocalDateTime limit = sessionDate.atTime(
+                        LocalTime.parse(av.getEndTime()));
 
                 while (remaining > 0 && start.isBefore(limit)) {
 
-                    long duration = Math.min(MAX_HOURS_PER_SESSION, remaining);
+                    long maxPossible = Duration.between(start, limit).toHours();
+                    if (maxPossible <= 0) break;
+
+                    long duration = Math.min(
+                            Math.min(MAX_HOURS_PER_SESSION, remaining),
+                            maxPossible
+                    );
+
                     LocalDateTime end = start.plusHours(duration);
 
-                    if (end.isAfter(limit)) break;
-
-                    if (!hasOverlap(userId, start, end, generatedSessions)) {
+                    if (!hasOverlap(start, end, allSessions)) {
 
                         StudySession session = StudySession.builder()
                                 .userId(userId)
@@ -108,57 +157,34 @@ public class StudySessionService {
                                 .status(SessionStatus.PLANNED)
                                 .build();
 
-                        StudySession saved = repository.save(session);
-                        generatedSessions.add(saved);
-
-                        remaining -= duration;
+                        generatedSessions.add(session);
+                        allSessions.add(session);
+                        remaining -= (int) duration;
                     }
 
                     start = end;
                 }
-
-                if (remaining <= 0) break;
             }
         }
 
-        return generatedSessions;
-    }
-
-    // ==============================
-    // OVERLAP CHECK
-    // ==============================
-    private boolean hasOverlap(String userId,
-                               LocalDateTime start,
-                               LocalDateTime end,
-                               List<StudySession> newSessions) {
-
-        for (StudySession s : repository.findByUserId(userId)) {
-            if (isOverlap(start, end, s.getStartTime(), s.getEndTime())) {
-                return true;
-            }
-        }
-
-        for (StudySession s : newSessions) {
-            if (isOverlap(start, end, s.getStartTime(), s.getEndTime())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isOverlap(LocalDateTime s1, LocalDateTime e1,
-                              LocalDateTime s2, LocalDateTime e2) {
-        return s1.isBefore(e2) && e1.isAfter(s2);
+        // ==============================
+        // SAVE ALL AT ONCE
+        // ==============================
+        return repository.saveAll(generatedSessions);
     }
 
     // ==============================
     // COMPLETE SESSION
     // ==============================
-    public StudySession completeSession(String sessionId) {
+    public StudySession completeSession(String sessionId, String userId) {
 
         StudySession session = repository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        // 🔒 SECURITY CHECK
+        if (!session.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
 
         if (session.getStatus() == SessionStatus.DONE) {
             throw new RuntimeException("Session already completed");
@@ -183,9 +209,8 @@ public class StudySessionService {
 
         LocalDate sessionDate = session.getStartTime().toLocalDate();
 
-        List<Objective> objectives = objectiveRepository.findByUserId(session.getUserId());
-
-        Objective obj = objectives.stream()
+        Objective obj = objectiveRepository.findByUserId(session.getUserId())
+                .stream()
                 .filter(o ->
                         o.getSubjectId().equals(session.getSubjectId()) &&
                                 !sessionDate.isBefore(o.getWeekStartDate()) &&
@@ -196,7 +221,8 @@ public class StudySessionService {
 
         if (obj == null) return;
 
-        long hours = Duration.between(session.getStartTime(), session.getEndTime()).toHours();
+        long hours = Duration.between(
+                session.getStartTime(), session.getEndTime()).toHours();
 
         obj.setProgress(Math.min(
                 obj.getProgress() + (int) hours,
@@ -204,5 +230,17 @@ public class StudySessionService {
         ));
 
         objectiveRepository.save(obj);
+    }
+
+    // ==============================
+    // OVERLAP CHECK
+    // ==============================
+    private boolean hasOverlap(LocalDateTime start,
+                               LocalDateTime end,
+                               List<StudySession> sessions) {
+
+        return sessions.stream().anyMatch(s ->
+                start.isBefore(s.getEndTime()) && end.isAfter(s.getStartTime())
+        );
     }
 }

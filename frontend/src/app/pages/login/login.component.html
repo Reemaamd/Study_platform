@@ -1,0 +1,64 @@
+<div class="auth-layout">
+
+  <!-- Panneau gauche : branding sombre -->
+  <div class="auth-panel auth-panel--brand">
+    <div class="brand-logo">Loci.</div>
+    <div class="brand-bottom">
+      <blockquote class="brand-quote">"Reviens à<br>l'atelier."</blockquote>
+      <span class="brand-tag">MANIFESTE · 04</span>
+    </div>
+  </div>
+
+  <!-- Panneau droit : formulaire -->
+  <div class="auth-panel auth-panel--form">
+    <div class="form-wrapper">
+
+      <p class="form-eyebrow">SE CONNECTER</p>
+      <h1 class="form-title">Bon retour.</h1>
+
+      <form (ngSubmit)="onLogin()" novalidate>
+
+        <div class="field-group">
+          <label class="field-label" for="login-username">NOM D'UTILISATEUR</label>
+          <input
+            id="login-username"
+            class="field-input"
+            type="text"
+            [(ngModel)]="username"
+            name="username"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="login-password">MOT DE PASSE</label>
+          <input
+            id="login-password"
+            class="field-input"
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button class="btn-submit" type="submit">
+          Entrer <span class="btn-arrow">→</span>
+        </button>
+
+      </form>
+
+      <p class="form-footer-link" *ngIf="errorMessage">
+        <span class="msg msg--error">{{ errorMessage }}</span>
+      </p>
+
+      <p class="form-footer-link">
+        Pas encore de compte ?&nbsp;<a routerLink="/register">Créer</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>

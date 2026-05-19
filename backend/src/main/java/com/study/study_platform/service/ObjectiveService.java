@@ -24,90 +24,102 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ObjectiveService {
+
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final ObjectiveRepository objectiveRepository;
     private final ObjectiveMapper objectiveMapper;
 
+    // ==============================
     // GET USER ID FROM JWT
+    // ==============================
     private String getUserId() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
     }
 
+    // ==============================
+    // VALIDATE SUBJECT BELONGS TO USER
+    // ==============================
+    private void validateSubjectOwnership(String subjectId, String userId) {
+        if (subjectId == null) return;
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
+        if (!subject.getUserId().equals(userId)) {
+            throw new RuntimeException("Subject does not belong to this user");
+        }
+    }
+
+    // ==============================
+    // ENRICH DTO WITH SUBJECT NAME
+    // ==============================
     private ObjectiveDTO enrich(Objective obj, Map<String, Subject> subjectMap) {
-
         ObjectiveDTO dto = objectiveMapper.toDTO(obj);
-
         Subject subject = obj.getSubjectId() != null
                 ? subjectMap.get(obj.getSubjectId())
                 : null;
         dto.setSubjectName(subject != null ? subject.getName() : "Unknown");
-
         return dto;
     }
 
+    // ==============================
+    // BUILD SUBJECT MAP
+    // ==============================
     private Map<String, Subject> buildSubjectMap(List<Objective> objectives) {
-
         List<String> subjectIds = objectives.stream()
                 .map(Objective::getSubjectId)
                 .distinct()
                 .toList();
-        if (subjectIds.isEmpty()) {
-            return new HashMap<>();
-        }
+        if (subjectIds.isEmpty()) return new HashMap<>();
         return subjectRepository.findAllById(subjectIds)
                 .stream()
-                .collect(Collectors.toMap(
-                        Subject::getId,
-                        s -> s,
-                        (a, b) -> a));
+                .collect(Collectors.toMap(Subject::getId, s -> s, (a, b) -> a));
     }
 
+    // ==============================
     // CREATE
+    // ==============================
     public ObjectiveDTO create(ObjectiveRequest request) {
 
         String userId = getUserId();
 
+        // ✅ VALIDATE SUBJECT OWNERSHIP
+        validateSubjectOwnership(request.getSubjectId(), userId);
+
         Objective obj = objectiveMapper.toEntity(request, userId);
 
-        // ✅ AUTO WEEK CALCULATION
         LocalDate today = LocalDate.now();
-
-        LocalDate start = today.with(java.time.DayOfWeek.MONDAY);
-        LocalDate end = today.with(java.time.DayOfWeek.SUNDAY);
-
-        obj.setWeekStartDate(start);
-        obj.setWeekEndDate(end);
+        obj.setWeekStartDate(today.with(DayOfWeek.MONDAY));
+        obj.setWeekEndDate(today.with(DayOfWeek.SUNDAY));
 
         objectiveRepository.save(obj);
 
-        Map<String, Subject> subjectMap =
-                buildSubjectMap(List.of(obj));
-
-        return enrich(obj, subjectMap);
+        return enrich(obj, buildSubjectMap(List.of(obj)));
     }
 
+    // ==============================
     // GET BY ID
+    // ==============================
     public ObjectiveDTO getById(String id) {
+
+        String userId = getUserId();
+
         Objective obj = objectiveRepository.findById(id)
                 .orElseThrow(() -> new ObjectiveNotFoundException("Objective not found"));
-        if (!obj.getUserId().equals(getUserId())) {
+
+        if (!obj.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
         }
-        Map<String, Subject> subjectMap =
-                buildSubjectMap(List.of(obj));
-        return enrich(obj, subjectMap);
+
+        return enrich(obj, buildSubjectMap(List.of(obj)));
     }
 
-    // UPDATE PROGRESS Objectifs :
-    //mise à jour progress
-    //calcul percentage
-    //check completion
-    //future notification placeholder
+    // ==============================
+    // UPDATE PROGRESS
+    // ==============================
     public ObjectiveDTO updateProgress(String id, int progress) {
 
         String userId = getUserId();
@@ -115,71 +127,24 @@ public class ObjectiveService {
         Objective obj = objectiveRepository.findById(id)
                 .orElseThrow(() -> new ObjectiveNotFoundException("Objective not found"));
 
-        // 🔒 security check
         if (!obj.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
         }
 
-        // update progress
         obj.setProgress(progress);
 
-        // calculate percentage (important)
-        /*int percentage = 0;
-        if (obj.getWeeklyGoal() != 0) {
-            percentage = (progress * 100) / obj.getWeeklyGoal();
-        }
-*/
-        // check completion
         if (progress >= obj.getWeeklyGoal()) {
             System.out.println("🎯 Objective completed!");
-
-            // 🔔 future notification hook
-            // notificationService.sendObjectiveCompleted(obj);
         }
 
         objectiveRepository.save(obj);
 
-        // convert + return DTO
-        // ObjectiveDTO dto = objectiveMapper.toDTO(obj);
-        //dto.setProgressPercentage(percentage); */
-
-        // ✅ build subjectMap
-        Map<String, Subject> subjectMap = buildSubjectMap(List.of(obj));
-
-        return enrich(obj, subjectMap);
+        return enrich(obj, buildSubjectMap(List.of(obj)));
     }
 
-    // DELETE
-    public void delete(String id) {
-
-        String userId = getUserId();
-
-        Objective obj = objectiveRepository.findById(id)
-                .orElseThrow(() -> new ObjectiveNotFoundException("Objective not found"));
-
-        if (!obj.getUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        objectiveRepository.delete(obj);
-    }
-
-    // GET BY WEEK (CORRECT VERSION)
-    public List<ObjectiveDTO> getByWeek(LocalDate weekStart, LocalDate weekEnd) {
-
-        String userId = getUserId();
-
-        List<Objective> objectives =
-                objectiveRepository.findByUserIdAndWeekStartDateBetween(userId, weekStart, weekEnd);
-
-        Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
-        return objectives.stream()
-                .map(obj -> enrich(obj, subjectMap))
-                .collect(Collectors.toList());
-    }
-
-    //update() — modifier un objectif
+    // ==============================
+    // UPDATE
+    // ==============================
     public ObjectiveDTO update(String id, ObjectiveRequest request) {
 
         String userId = getUserId();
@@ -191,9 +156,9 @@ public class ObjectiveService {
             throw new RuntimeException("Unauthorized");
         }
 
-        // ✅ SAFE UPDATE ONLY
-
+        // ✅ VALIDATE SUBJECT OWNERSHIP IF CHANGED
         if (request.getSubjectId() != null) {
+            validateSubjectOwnership(request.getSubjectId(), userId);
             obj.setSubjectId(request.getSubjectId());
         }
 
@@ -219,15 +184,49 @@ public class ObjectiveService {
 
         objectiveRepository.save(obj);
 
-        Map<String, Subject> subjectMap = buildSubjectMap(List.of(obj));
-        return enrich(obj, subjectMap);
+        return enrich(obj, buildSubjectMap(List.of(obj)));
     }
 
-    //getByPriority() — triés par priorité décroissante :
-    public List<ObjectiveDTO> getByPriority() {
+    // ==============================
+    // DELETE
+    // ==============================
+    public void delete(String id) {
 
-        List<Objective> objectives =
-                objectiveRepository.findByUserIdOrderByPriorityDesc(getUserId());
+        String userId = getUserId();
+
+        Objective obj = objectiveRepository.findById(id)
+                .orElseThrow(() -> new ObjectiveNotFoundException("Objective not found"));
+
+        if (!obj.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        objectiveRepository.delete(obj);
+    }
+
+    // ==============================
+    // GET ALL
+    // ==============================
+    public List<ObjectiveDTO> getAll() {
+
+        String userId = getUserId();
+
+        List<Objective> objectives = objectiveRepository.findByUserId(userId);
+
+        return objectives.stream()
+                .map(obj -> enrich(obj, buildSubjectMap(List.of(obj))))
+                .collect(Collectors.toList());
+    }
+
+    // ==============================
+    // GET BY WEEK
+    // ==============================
+    public List<ObjectiveDTO> getByWeek(LocalDate weekStart, LocalDate weekEnd) {
+
+        String userId = getUserId();
+
+        List<Objective> objectives = objectiveRepository
+                .findByUserIdAndWeekStartDateBetween(userId, weekStart, weekEnd);
 
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
 
@@ -236,7 +235,24 @@ public class ObjectiveService {
                 .collect(Collectors.toList());
     }
 
-    //getAchieved() — objectifs 100% atteints :
+    // ==============================
+    // GET BY PRIORITY
+    // ==============================
+    public List<ObjectiveDTO> getByPriority() {
+
+        List<Objective> objectives = objectiveRepository
+                .findByUserIdOrderByPriorityDesc(getUserId());
+
+        Map<String, Subject> subjectMap = buildSubjectMap(objectives);
+
+        return objectives.stream()
+                .map(obj -> enrich(obj, subjectMap))
+                .collect(Collectors.toList());
+    }
+
+    // ==============================
+    // GET ACHIEVED
+    // ==============================
     public List<ObjectiveDTO> getAchieved() {
 
         String userId = getUserId();
@@ -253,68 +269,36 @@ public class ObjectiveService {
                 .collect(Collectors.toList());
     }
 
-    //TOTAL OBJECTIVES
-    public long getTotalObjectives() {
-        return objectiveRepository.findByUserId(getUserId()).size();
-    }
-
-    //ACHIEVED OBJECTIVES
-    public long getAchievedCount() {
-        return objectiveRepository.findByUserId(getUserId())
-                .stream()
-                .filter(o -> o.getProgress() >= o.getWeeklyGoal())
-                .count();
-    }
-
-    //PENDING OBJECTIVES
-    public long getPendingCount() {
-        return objectiveRepository.findByUserId(getUserId())
-                .stream()
-                .filter(o -> o.getProgress() < o.getWeeklyGoal())
-                .count();
-    }
-
-    //CURRENT WEEK OBJECTIVES
-    public List<ObjectiveDTO> getCurrentWeekObjectives(LocalDate start, LocalDate end) {
-
-        List<Objective> objectives =
-                objectiveRepository.findByUserIdAndWeekStartDateBetween(getUserId(), start, end);
-
-        Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
-        return objectives.stream()
-                .map(obj -> enrich(obj, subjectMap))
-                .collect(Collectors.toList());
-    }
-
+    // ==============================
+    // GET WEEKLY OVERVIEW
+    // ==============================
     public List<ObjectiveDTO> getWeeklyOverview(LocalDate date) {
 
         String userId = getUserId();
 
         LocalDate start = date.with(DayOfWeek.MONDAY);
-        LocalDate end = date.with(DayOfWeek.SUNDAY);
-        List<Objective> objectives =
-                objectiveRepository.findByUserIdAndWeekStartDateBetween(userId, start, end);
+        LocalDate end   = date.with(DayOfWeek.SUNDAY);
+
+        List<Objective> objectives = objectiveRepository
+                .findByUserIdAndWeekStartDateBetween(userId, start, end);
 
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
 
         return objectives.stream()
                 .map(obj -> {
                     ObjectiveDTO dto = enrich(obj, subjectMap);
-
-                    int percentage = 0;
-                    if (obj.getWeeklyGoal() != 0) {
-                        percentage = (obj.getProgress() * 100) / obj.getWeeklyGoal();
-                    }
-
+                    int percentage = obj.getWeeklyGoal() != 0
+                            ? (obj.getProgress() * 100) / obj.getWeeklyGoal()
+                            : 0;
                     dto.setProgressPercentage(percentage);
-
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
 
-    //Historique des semaines passées
+    // ==============================
+    // GET HISTORY
+    // ==============================
     public List<ObjectiveDTO> getHistory() {
 
         String userId = getUserId();
@@ -322,7 +306,8 @@ public class ObjectiveService {
 
         List<Objective> objectives = objectiveRepository.findByUserId(userId)
                 .stream()
-                .filter(o -> o.getWeekEndDate() != null && o.getWeekEndDate().isBefore(today))
+                .filter(o -> o.getWeekEndDate() != null
+                        && o.getWeekEndDate().isBefore(today))
                 .toList();
 
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
@@ -332,40 +317,68 @@ public class ObjectiveService {
                 .collect(Collectors.toList());
     }
 
-    // ADMIN - tous les objectifs de tous les users
+    // ==============================
+    // STATS
+    // ==============================
+    public long getTotalObjectives() {
+        return objectiveRepository.findByUserId(getUserId()).size();
+    }
+
+    public long getAchievedCount() {
+        return objectiveRepository.findByUserId(getUserId())
+                .stream()
+                .filter(o -> o.getProgress() >= o.getWeeklyGoal())
+                .count();
+    }
+
+    public long getPendingCount() {
+        return objectiveRepository.findByUserId(getUserId())
+                .stream()
+                .filter(o -> o.getProgress() < o.getWeeklyGoal())
+                .count();
+    }
+
+    public List<ObjectiveDTO> getCurrentWeekObjectives(LocalDate start, LocalDate end) {
+
+        List<Objective> objectives = objectiveRepository
+                .findByUserIdAndWeekStartDateBetween(getUserId(), start, end);
+
+        Map<String, Subject> subjectMap = buildSubjectMap(objectives);
+
+        return objectives.stream()
+                .map(obj -> enrich(obj, subjectMap))
+                .collect(Collectors.toList());
+    }
+
+    // ==============================
+    // ADMIN
+    // ==============================
     public List<ObjectiveDTO> getAllForAdmin() {
         List<Objective> objectives = objectiveRepository.findAll();
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
         return objectives.stream()
                 .map(obj -> enrich(obj, subjectMap))
                 .collect(Collectors.toList());
     }
 
-    // ADMIN - filtrer par userId
     public List<ObjectiveDTO> getByUserIdForAdmin(String userId) {
-        List<Objective> objectives =
-                objectiveRepository.findByUserId(userId);
+        List<Objective> objectives = objectiveRepository.findByUserId(userId);
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
         return objectives.stream()
                 .map(obj -> enrich(obj, subjectMap))
                 .collect(Collectors.toList());
     }
 
-    // ADMIN - filtrer par matière
     public List<ObjectiveDTO> getBySubjectForAdmin(String subjectId) {
-        List<Objective> objectives =
-                objectiveRepository.findBySubjectId(subjectId);
+        List<Objective> objectives = objectiveRepository.findBySubjectId(subjectId);
         Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
         return objectives.stream()
                 .map(obj -> enrich(obj, subjectMap))
                 .collect(Collectors.toList());
     }
 
-    //ADMIN — statistiques globales
     public Map<String, Object> getGlobalStats() {
+
         List<Objective> all = objectiveRepository.findAll();
 
         long total = all.size();
@@ -375,7 +388,6 @@ public class ObjectiveService {
 
         double completionRate = total == 0 ? 0 : (achieved * 100.0) / total;
 
-        // matières les plus ciblées
         Map<String, Long> subjectCount = all.stream()
                 .collect(Collectors.groupingBy(
                         Objective::getSubjectId,
@@ -389,18 +401,5 @@ public class ObjectiveService {
         stats.put("subjectDistribution", subjectCount);
 
         return stats;
-    }
-
-    public List<ObjectiveDTO> getAll() {
-
-        String userId = getUserId();
-
-        List<Objective> objectives = objectiveRepository.findByUserId(userId);
-
-        Map<String, Subject> subjectMap = buildSubjectMap(objectives);
-
-        return objectives.stream()
-                .map(obj -> enrich(obj, subjectMap))
-                .collect(Collectors.toList());
     }
 }
