@@ -13,6 +13,5 @@ public class Availability {
     private DayOfWeek day;
 
     private String startTime;
-
     private String endTime;
 }
