@@ -23,6 +23,7 @@ public class StudySessionService {
     private final StudySessionRepository repository;
     private final UserRepository userRepository;
     private final ObjectiveRepository objectiveRepository;
+    private final NotificationService notificationService;
 
     private static final int MAX_HOURS_PER_SESSION = 3;
 
@@ -166,6 +167,12 @@ public class StudySessionService {
                 }
             }
         }
+        notificationService.send(
+                userId,
+                "📅 Your weekly study plan has been generated successfully",
+                "PLANNING_GENERATED",
+                "plan_" + userId + "_" + LocalDate.now()
+        );
 
         // ==============================
         // SAVE ALL AT ONCE
