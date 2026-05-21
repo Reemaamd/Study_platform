@@ -1,5 +1,5 @@
 package com.study.study_platform.exception;
-
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -64,5 +64,22 @@ public class GlobalExceptionHandler {
         error.put("message", "Internal error");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationException(
+            MethodArgumentNotValidException ex
+    ) {
+
+        String message = ex.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("error", "VALIDATION_ERROR");
+        response.put("message", message);
+        response.put("status", 400);
+
+        return ResponseEntity.badRequest().body(response);
     }
 }
