@@ -129,11 +129,19 @@ public class StudySessionService {
                         .with(TemporalAdjusters.nextOrSame(targetDay));
 
                 if (sessionDate.isAfter(currentWeekEnd)) continue;
+                if (sessionDate.isBefore(today)) continue;
 
                 LocalDateTime start = sessionDate.atTime(
                         LocalTime.parse(av.getStartTime()));
                 LocalDateTime limit = sessionDate.atTime(
                         LocalTime.parse(av.getEndTime()));
+
+                // ✅ Si c'est aujourd'hui, ajuster le start à maintenant si la dispo a déjà commencé
+                if (sessionDate.isEqual(today)) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (now.isAfter(limit)) continue;        // toute la plage est passée → skip
+                    if (now.isAfter(start)) start = now;     // plage partiellement passée → ajuster
+                }
 
                 while (remaining > 0 && start.isBefore(limit)) {
 
