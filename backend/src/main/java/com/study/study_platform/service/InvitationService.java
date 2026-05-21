@@ -23,7 +23,7 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final InvitationMapper invitationMapper;
-
+    private final NotificationService notificationService;
     public InvitationResponseDTO sendInvitation(
             InvitationDTO dto,
             String username
@@ -68,6 +68,14 @@ public class InvitationService {
 
         Invitation saved = invitationRepository.save(invitation);
 
+        // 🔔 NOTIFICATION ICI (IMPORTANT ENDROIT)
+        notificationService.send(
+                receiver.getId(),
+                "👥 " + sender.getUsername() +
+                        " invited you to join group: " + group.getName(),
+                "GROUP_INVITATION",
+                "inv_" + group.getId() + "_" + receiver.getId()
+        );
         return invitationMapper.toResponseDTO(saved);
     }
 

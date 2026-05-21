@@ -24,15 +24,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ObjectiveService {
-
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final ObjectiveRepository objectiveRepository;
     private final ObjectiveMapper objectiveMapper;
-
-    // ==============================
+    private final NotificationService notificationService;
     // GET USER ID FROM JWT
-    // ==============================
     private String getUserId() {
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
@@ -57,11 +54,14 @@ public class ObjectiveService {
     // ENRICH DTO WITH SUBJECT NAME
     // ==============================
     private ObjectiveDTO enrich(Objective obj, Map<String, Subject> subjectMap) {
+
         ObjectiveDTO dto = objectiveMapper.toDTO(obj);
+
         Subject subject = obj.getSubjectId() != null
                 ? subjectMap.get(obj.getSubjectId())
                 : null;
         dto.setSubjectName(subject != null ? subject.getName() : "Unknown");
+
         return dto;
     }
 
@@ -69,6 +69,7 @@ public class ObjectiveService {
     // BUILD SUBJECT MAP
     // ==============================
     private Map<String, Subject> buildSubjectMap(List<Objective> objectives) {
+
         List<String> subjectIds = objectives.stream()
                 .map(Objective::getSubjectId)
                 .distinct()
@@ -91,6 +92,7 @@ public class ObjectiveService {
 
         Objective obj = objectiveMapper.toEntity(request, userId);
 
+        // ✅ AUTO WEEK CALCULATION
         LocalDate today = LocalDate.now();
         obj.setWeekStartDate(today.with(DayOfWeek.MONDAY));
         obj.setWeekEndDate(today.with(DayOfWeek.SUNDAY));
@@ -131,16 +133,31 @@ public class ObjectiveService {
             throw new RuntimeException("Unauthorized");
         }
 
+        int oldProgress = obj.getProgress();
+        int goal = obj.getWeeklyGoal();
+
+        boolean wasCompleted = oldProgress >= goal;
+
         obj.setProgress(progress);
 
-        if (progress >= obj.getWeeklyGoal()) {
-            System.out.println("🎯 Objective completed!");
-        }
+        boolean isNowCompleted = progress >= goal;
 
         objectiveRepository.save(obj);
 
+        // ✅ NOTIFICATION ONLY ON TRANSITION
+        if (!wasCompleted && isNowCompleted) {
+
+            notificationService.send(
+                    obj.getUserId(),
+                    "🎯 Congratulations! You achieved your objective: " + obj.getTitle(),
+                    "OBJECTIVE_COMPLETED",
+                    "objective_" + obj.getId()
+            );
+        }
+
         return enrich(obj, buildSubjectMap(List.of(obj)));
     }
+
 
     // ==============================
     // UPDATE
