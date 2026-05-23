@@ -144,4 +144,41 @@ public class GroupService {
 
         return groupMapper.toResponseDTO(updated);
     }
+    public void removeMember(
+            String groupId,
+            String memberId,
+            String username
+    ) {
+
+        Utilisateur owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        if (!group.getOwnerId().equals(owner.getId())) {
+            throw new RuntimeException("Only owner can remove members");
+        }
+
+        if (group.getOwnerId().equals(memberId)) {
+            throw new RuntimeException("Owner cannot remove himself");
+        }
+
+        if (!group.getMemberIds().contains(memberId)) {
+            throw new RuntimeException("User is not member of group");
+        }
+
+        group.getMemberIds().remove(memberId);
+
+        groupRepository.save(group);
+
+        Utilisateur member = userRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        if (member.getGroupIds() != null) {
+            member.getGroupIds().remove(groupId);
+        }
+
+        userRepository.save(member);
+    }
 }

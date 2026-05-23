@@ -17,7 +17,7 @@ public class TestAuthRunner implements CommandLineRunner {
     public void run(String... args) {
 
         // 🔥 USER NORMAL
-        String userUsername = "test123";   // adapte selon ta DB
+        String userUsername = "test";   // adapte selon ta DB
         String userRole = "USER";
 
         String userToken = jwtUtils.generateToken(userUsername, userRole);

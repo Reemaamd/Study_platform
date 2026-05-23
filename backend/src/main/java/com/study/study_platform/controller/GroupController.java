@@ -1,5 +1,5 @@
 package com.study.study_platform.controller;
-
+import jakarta.validation.Valid;
 import com.study.study_platform.dto.GroupDTO;
 import com.study.study_platform.dto.GroupResponseDTO;
 import com.study.study_platform.model.document.Group;
@@ -20,7 +20,7 @@ public class GroupController {
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public GroupResponseDTO createGroup(
-            @RequestBody GroupDTO dto,
+            @Valid @RequestBody GroupDTO dto,
             Authentication authentication
     ) {
 
@@ -83,5 +83,20 @@ public class GroupController {
         String username = authentication.getName();
 
         return groupService.updateGroup(groupId, dto, username);
+    }
+
+    @DeleteMapping("/{groupId}/members/{memberId}")
+    @PreAuthorize("hasRole('USER')")
+    public String removeMember(
+            @PathVariable String groupId,
+            @PathVariable String memberId,
+            Authentication authentication
+    ) {
+
+        String username = authentication.getName();
+
+        groupService.removeMember(groupId, memberId, username);
+
+        return "Member removed successfully";
     }
 }
