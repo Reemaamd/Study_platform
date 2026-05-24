@@ -45,7 +45,7 @@ export class LoginComponent {
         localStorage.setItem('username', response.username);
 
         // redirection
-        this.router.navigate(['/']);
+        this.router.navigate(['/dashboard']);
       },
 
       error: (err) => {

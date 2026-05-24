@@ -15,11 +15,11 @@ public class StudySessionMapper {
                 .subjectId(dto.getSubjectId())
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
-                .status(SessionStatus.valueOf(dto.getStatus()))
+                .status(dto.getStatus())
                 .build();
     }
 
-    public StudySessionDTO toDTO(StudySession session) {
+  /*  public StudySessionDTO toDTO(StudySession session) {
 
         StudySessionDTO dto = new StudySessionDTO();
         dto.setSubjectId(session.getSubjectId());
@@ -28,5 +28,5 @@ public class StudySessionMapper {
         dto.setStatus(session.getStatus().name());
 
         return dto;
-    }
+    }*/
 }

@@ -1,9 +1,13 @@
 package com.study.study_platform.controller;
 
 import com.study.study_platform.dto.*;
+import com.study.study_platform.model.document.Utilisateur;
+import com.study.study_platform.repository.UserRepository;
 import com.study.study_platform.service.StatisticsService;
+import com.study.study_platform.service.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,8 @@ import java.util.Map;
 public class StatisticsController {
 
     private final StatisticsService service;
+    private final StudySessionService sessionService;
+    private final UserRepository userRepository;
 
     @GetMapping("/dashboard")
     public DashboardStatsDTO dashboard(
@@ -43,10 +49,11 @@ public class StatisticsController {
         return service.getWeeklyProductivity(u.getUsername());
     }
 
+    // ✅ Cette méthode doit appeler getSubjectStats(username), PAS getSubjectsStats()
     @GetMapping("/subjects-stats")
     public List<SubjectStatsDTO> subjectsStats(
             @AuthenticationPrincipal UserDetails u) {
-        return service.getSubjectStats(u.getUsername());
+        return service.getSubjectStats(u.getUsername());  // ← avec "username" en param
     }
    //Est-ce que l’utilisateur travaille régulièrement ?
     //“habitude globale sur toutes les données”
@@ -78,14 +85,35 @@ public class StatisticsController {
     public List<Map<String, Object>> usersStats() {
         return service.getUsersStats();
     }
-    @GetMapping("/admin/subjects-stats")
+    /*@GetMapping("/admin/subjects-stats")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Map<String, Object>> subjectsStats() {
         return service.getSubjectsStats();
-    }
+    }*/
     @GetMapping("/admin/weekly-trend")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Map<String, Object>> weeklyTrend() {
         return service.getWeeklyTrend();
+    }
+
+    @GetMapping("/today-sessions")
+    public List<TodaySessionDTO> todaySessions(
+            @AuthenticationPrincipal UserDetails u) {
+
+        return service.getTodaySessions(u.getUsername());
+    }
+
+    @GetMapping("/streak")
+    public StreakResponse getStreak(@AuthenticationPrincipal UserDetails u) {
+
+        String username = u.getUsername();
+
+
+        Utilisateur user = userRepository.findByUsername(username)
+                .orElseThrow();
+
+        int streak = sessionService.calculateFocusStreak(user.getId());
+
+        return new StreakResponse(streak);
     }
 }

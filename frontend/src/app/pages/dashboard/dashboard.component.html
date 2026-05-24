@@ -1,0 +1,202 @@
+<div class="dashboard">
+<!--  <p>DEBUG loaded={{ loaded }} sessions={{ todaySessions.length }}</p>-->
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1 class="greeting">
+        Bonjour, <em>{{ username || 'Utilisateur' }}</em>.
+      </h1>
+      <p class="subtitle">
+        {{ dashboardData?.totalSessions || 0 }} sessions prévues,
+        {{ dashboardData?.activeCircles || 0 }} cercles actifs.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row">
+
+    <div class="stat-card green">
+      <p class="stat-label">Temps étudié</p>
+      <p class="stat-value">{{ dashboardData?.totalStudyHours ?? 0 }}</p>
+      <p class="stat-sub">+18% cette semaine</p>
+      <svg class="stat-icon" viewBox="0 0 24 24" stroke="#5a5a5a" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+
+    <div class="stat-card amber">
+      <p class="stat-label">Objectif hebdo</p>
+      <p class="stat-value">{{ dashboardData?.completionRate ?? 0 }}%</p>
+      <p class="stat-sub">{{ studyTime?.completedHours ?? 0 }}h / {{ studyTime?.plannedHours ?? 0 }}h</p>
+      <svg class="stat-icon" viewBox="0 0 24 24" stroke="#5a5a5a" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+    </div>
+
+    <div class="stat-card blue">
+      <p class="stat-label">Série focus</p>
+      <p class="stat-value">{{ streak }} j</p>
+      <p class="stat-sub">record personnel</p>
+      <svg class="stat-icon" viewBox="0 0 24 24" stroke="#5a5a5a" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2c0 6-6 8-6 13a6 6 0 0 0 12 0c0-5-6-7-6-13z"/>
+      </svg>
+    </div>
+
+  </div>
+
+  <!-- BODY -->
+  <div class="body-grid">
+
+<!-- TODAY SESSIONS -->
+<div class="today-card">
+  <div class="today-header">
+    <h2 class="today-title">Aujourd'hui</h2>
+    <span class="see-all">Tout voir</span>
+  </div>
+
+  <!-- CHARGEMENT -->
+  <ng-container *ngIf="!loaded">
+    <p style="font-size:13px;color:#7a7468;padding:12px;">Chargement...</p>
+  </ng-container>
+
+  <!-- SESSIONS REELLES -->
+  <ng-container *ngIf="loaded && todaySessions.length > 0">
+    <div *ngFor="let s of todaySessions"
+         class="session"
+         [ngClass]="s.color || 'green'">
+      <div>
+        <p class="session-time">{{ s.start || '--:--' }} – {{ s.end || '--:--' }}</p>
+        <p class="session-name">{{ s.title || 'Sans titre' }}</p>
+      </div>
+      <ng-container *ngIf="s.active; else upcoming">
+        <button class="btn-start">Démarrer</button>
+      </ng-container>
+      <ng-template #upcoming>
+        <span class="badge-soon">à venir</span>
+      </ng-template>
+    </div>
+  </ng-container>
+
+  <!-- FALLBACK SI LOADED MAIS AUCUNE SESSION -->
+  <ng-container *ngIf="loaded && todaySessions.length === 0">
+    <div class="session green">
+      <div>
+        <p class="session-time">08:00 – 09:30</p>
+        <p class="session-name">Algèbre linéaire — exercices ch.3</p>
+      </div>
+      <button class="btn-start">Démarrer</button>
+    </div>
+    <div class="session amber">
+      <div>
+        <p class="session-time">10:00 – 11:30</p>
+        <p class="session-name">Cercle · Algorithmique</p>
+      </div>
+      <span class="badge-soon">à venir</span>
+    </div>
+    <div class="session blue">
+      <div>
+        <p class="session-time">13:30 – 14:30</p>
+        <p class="session-name">Lecture — Histoire</p>
+      </div>
+      <span class="badge-soon">à venir</span>
+    </div>
+  </ng-container>
+</div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+     <!-- SUGGESTION -->
+      <!--  <div class="suggestion-card">
+        <svg class="suggestion-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6l-4.9 3.6 1.9-5.8L4.1 8.8H10L12 3z"/>
+        </svg>
+        <h3 class="suggestion-title">Suggestion de l'atelier</h3>
+        <p class="suggestion-text">Vous êtes en avance sur Algorithmique. Re-distribuer 1h vers Histoire ?</p>
+        <div class="suggestion-actions">
+          <button class="btn-apply">Appliquer</button>
+          <button class="btn-ignore">Ignorer</button>
+        </div>
+      </div> -->
+
+      <!-- WEEKLY OBJECTIVES -->
+      <div class="objectives-card">
+        <h3 class="objectives-title">Objectifs de la semaine</h3>
+
+        <div *ngIf="subjectsStats.length === 0">
+          <p style="font-size:13px;color:#7a7468;font-weight:300;">Aucune statistique disponible.</p>
+        </div>
+
+        <div *ngFor="let subj of subjectsStats" class="obj-row">
+          <div class="obj-label">
+            <span>{{ subj.subject }}</span>
+            <span class="obj-pct">{{ subj.percentage ?? subj.progress ?? 0 }}%</span>
+          </div>
+          <div class="obj-track">
+            <div class="obj-fill" [style.width.%]="subj.percentage ?? subj.progress ?? 0" [style.background]="subj.color || '#4CAF7D'"></div>
+          </div>
+        </div>
+
+        <!-- Daily study hours -->
+        <div *ngIf="dailyHours.length > 0">
+          <hr />
+          <div *ngFor="let dh of dailyHours">
+            <small style="color:#7a7468;">{{ dh.day || dh.date }}</small>
+            <div>{{ dh.hours ?? 0 }} h</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAVBAR -->
+<nav class="navbar">
+  <div class="nav">
+    <a class="nav-item active" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Loci
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Aujourd'hui
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Studio
+    </a>
+    <a class="nav-item" href="/planning">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
+      Planning
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Cercles
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analyse
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Admin
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </a>
+  </div>
+</nav>

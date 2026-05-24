@@ -1,12 +1,15 @@
 package com.study.study_platform.service;
 
+import com.study.study_platform.dto.StudySessionDTO;
 import com.study.study_platform.model.document.Objective;
 import com.study.study_platform.model.document.StudySession;
+import com.study.study_platform.model.document.Subject;
 import com.study.study_platform.model.document.Utilisateur;
 import com.study.study_platform.model.embedded.Availability;
 import com.study.study_platform.model.enums.SessionStatus;
 import com.study.study_platform.repository.ObjectiveRepository;
 import com.study.study_platform.repository.StudySessionRepository;
+import com.study.study_platform.repository.SubjectRepository;
 import com.study.study_platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ public class StudySessionService {
     private final UserRepository userRepository;
     private final ObjectiveRepository objectiveRepository;
     private final NotificationService notificationService;
+    private final SubjectRepository subjectRepository;
+
 
     private static final int MAX_HOURS_PER_SESSION = 3;
 
@@ -34,6 +39,7 @@ public class StudySessionService {
 
         Utilisateur user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        System.out.println("GENERATE FOR USER = " + username);
 
         if (user.getAvailabilities() == null || user.getAvailabilities().isEmpty()) {
             throw new RuntimeException("No availability defined");
@@ -174,6 +180,7 @@ public class StudySessionService {
                     start = end;
                 }
             }
+            System.out.println("GENERATE FOR USER = " + username);
         }
         notificationService.send(
                 userId,
@@ -196,17 +203,13 @@ public class StudySessionService {
         StudySession session = repository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        // 🔒 SECURITY CHECK
         if (!session.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
         }
 
-        if (session.getStatus() == SessionStatus.DONE) {
-            throw new RuntimeException("Session already completed");
-        }
-
-        if (session.getEndTime().isAfter(LocalDateTime.now())) {
-            throw new RuntimeException("Session not finished yet");
+        // seulement ONGOING peut être terminé
+        if (session.getStatus() != SessionStatus.ONGOING) {
+            throw new RuntimeException("Session must be ONGOING to complete");
         }
 
         session.setStatus(SessionStatus.DONE);
@@ -216,11 +219,29 @@ public class StudySessionService {
 
         return session;
     }
+    public void updateSessionToOngoing(String userId) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<StudySession> sessions = repository.findByUserId(userId);
+
+        List<StudySession> toUpdate = sessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.PLANNED)
+                .filter(s -> !now.isBefore(s.getStartTime()))
+                .filter(s -> now.isBefore(s.getEndTime()))
+                .toList();
+
+        for (StudySession s : toUpdate) {
+            s.setStatus(SessionStatus.ONGOING);
+        }
+
+        repository.saveAll(toUpdate);
+    }
 
     // ==============================
     // UPDATE OBJECTIVE PROGRESS
     // ==============================
-    private void updateObjectiveProgress(StudySession session) {
+    public void updateObjectiveProgress(StudySession session) {
 
         LocalDate sessionDate = session.getStartTime().toLocalDate();
 
@@ -257,5 +278,81 @@ public class StudySessionService {
         return sessions.stream().anyMatch(s ->
                 start.isBefore(s.getEndTime()) && end.isAfter(s.getStartTime())
         );
+    }
+    public int calculateFocusStreak(String userId) {
+
+
+        List<StudySession> sessions = repository.findByUserId(userId)
+                .stream()
+                .filter(s -> s.getStatus() == SessionStatus.DONE)
+                .toList();
+
+        // extraire les dates uniques
+        Set<LocalDate> studyDays = sessions.stream()
+                .map(s -> s.getStartTime().toLocalDate())
+                .collect(Collectors.toSet());
+
+        LocalDate today = LocalDate.now();
+
+        int streak = 0;
+        LocalDate current = today;
+
+        // si aujourd’hui pas de study → on commence hier
+        if (!studyDays.contains(today)) {
+            current = today.minusDays(1);
+        }
+
+        while (studyDays.contains(current)) {
+            streak++;
+            current = current.minusDays(1);
+        }
+
+        return streak;
+    }
+
+    public List<StudySessionDTO> getUserSessionsThisWeek(String username) {
+
+        Utilisateur user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime weekStart = today
+                .with(java.time.DayOfWeek.MONDAY)
+                .atStartOfDay();
+
+        LocalDateTime weekEnd = today
+                .with(java.time.DayOfWeek.SUNDAY)
+                .atTime(23, 59, 59);
+
+        List<StudySession> sessions =
+                repository.findByUserIdAndStartTimeBetween(
+                        user.getId(),
+                        weekStart,
+                        weekEnd
+                );
+
+        return sessions.stream()
+                .map(session -> {
+
+                    Subject subject = subjectRepository
+                            .findById(session.getSubjectId())
+                            .orElse(null);
+
+                    return StudySessionDTO.builder()
+                            .id(session.getId())
+                            .subjectId(session.getSubjectId())
+                            .subjectName(
+                                    subject != null
+                                            ? subject.getName()
+                                            : "Unknown"
+                            )
+                            .startTime(session.getStartTime())
+                            .endTime(session.getEndTime())
+                            .status(session.getStatus())
+                            .build();
+                })
+                .toList();
     }
 }
