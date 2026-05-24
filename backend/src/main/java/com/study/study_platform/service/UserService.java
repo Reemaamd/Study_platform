@@ -2,6 +2,7 @@ package com.study.study_platform.service;
 
 import com.study.study_platform.dto.UserRequest;
 import com.study.study_platform.dto.UserResponse;
+import com.study.study_platform.exception.BadRequestException;
 import com.study.study_platform.exception.UserAlreadyExistsException;
 import com.study.study_platform.model.document.Role;
 import com.study.study_platform.model.document.Utilisateur;
@@ -94,7 +95,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Ancien mot de passe incorrect");
+            throw new BadRequestException("Ancien mot de passe incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));

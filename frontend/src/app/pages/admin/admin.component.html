@@ -1,0 +1,497 @@
+<div class="admin-shell">
+
+  <!-- ── TOAST ───────────────────────────────────────────────── -->
+  @if (notif) {
+    <div class="toast" [class.toast-success]="notif.type==='success'" [class.toast-error]="notif.type==='error'">
+      <span class="toast-icon">{{ notif.type === 'success' ? '✓' : '✗' }}</span>
+      {{ notif.message }}
+    </div>
+  }
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="admin-header">
+    <div class="header-left">
+      <span class="console-label"><span class="dot"></span> CONSOLE ADMINISTRATEUR</span>
+      <h1 class="header-title">L'atelier <em>vu d'en haut.</em></h1>
+    </div>
+    <div class="header-right">
+      <nav class="header-nav">
+        <button class="nav-btn" [class.active]="activeTab()==='overview'" (click)="setTab('overview')">Vue d'ensemble</button>
+        <button class="nav-btn" [class.active]="activeTab()==='users'"    (click)="setTab('users')">Utilisateurs</button>
+        <button class="nav-btn" [class.active]="activeTab()==='groups'"   (click)="setTab('groups')">Groupes</button>
+        <button class="nav-btn" [class.active]="activeTab()==='account'"  (click)="setTab('account')">Mon compte</button>
+      </nav>
+      <button class="logout-btn" (click)="logout()" title="Se déconnecter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════ OVERVIEW ══════════════════════════ -->
+  @if (activeTab() === 'overview') {
+    <section class="tab-content">
+
+      @if (overviewLoading) {
+        <!-- Skeleton léger — pas de spinner bloquant -->
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+        <div class="skeleton-grid">
+          <div class="skeleton-sm"></div>
+          <div class="skeleton-sm"></div>
+          <div class="skeleton-sm"></div>
+          <div class="skeleton-sm"></div>
+        </div>
+        <div class="skeleton-charts">
+          <div class="skeleton-chart-main"></div>
+          <div class="skeleton-chart-side"></div>
+        </div>
+      } @else {
+
+        <!-- KPI row 1 -->
+        <div class="kpi-grid">
+          <div class="kpi-card green">
+            <div class="kpi-top">
+              <span class="kpi-label">UTILISATEURS</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="kpi-value">{{ overviewStats.totalUsers | number }}</div>
+            <div class="kpi-sub">comptes enregistrés</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-top">
+              <span class="kpi-label">SESSIONS TOTALES</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="kpi-value">{{ overviewStats.totalSessions | number }}</div>
+            <div class="kpi-sub">{{ overviewStats.completedSessions }} terminées</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-top">
+              <span class="kpi-label">HEURES D'ÉTUDE</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="kpi-value">{{ overviewStats.totalStudyHours | number }}</div>
+            <div class="kpi-sub">heures cumulées</div>
+          </div>
+          <div class="kpi-card pink">
+            <div class="kpi-top">
+              <span class="kpi-label">ACTIFS 7 JOURS</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            </div>
+            <div class="kpi-value">{{ overviewStats.activeUsers }}</div>
+            <div class="kpi-sub">utilisateurs actifs</div>
+          </div>
+        </div>
+
+        <!-- KPI row 2 -->
+        <div class="kpi-row2">
+          <div class="kpi-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+            <div><div class="kpi-sm-label">Sessions terminées</div><div class="kpi-sm-val">{{ overviewStats.completedSessions }}</div></div>
+          </div>
+          <div class="kpi-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div><div class="kpi-sm-label">Moy. heures / utilisateur</div><div class="kpi-sm-val">{{ overviewStats.avgStudyPerUser | number:'1.0-1' }}h</div></div>
+          </div>
+          <div class="kpi-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <div><div class="kpi-sm-label">Rôle USER</div><div class="kpi-sm-val">{{ roleDistribution.users }}</div></div>
+          </div>
+          <div class="kpi-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div><div class="kpi-sm-label">Rôle ADMIN</div><div class="kpi-sm-val">{{ roleDistribution.admins }}</div></div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Heures par matière</span>
+              <span class="chart-period">top 12 · heures cumulées</span>
+            </div>
+            @if (subjectStats.length === 0) {
+              <div class="no-data">Aucune session disponible.</div>
+            } @else {
+              <div class="bar-chart">
+                @for (val of activityData; track $index) {
+                  <div class="bar-col" [title]="activityLabels[$index] + ' — ' + val + 'h'">
+                    <div class="bar" [style.height.px]="barHeight(val)"></div>
+                    <span class="bar-label">{{ activityLabels[$index] }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="role-card">
+            <div class="role-title">Répartition des rôles</div>
+            <div class="role-item">
+              <div class="role-row">
+                <span>Utilisateurs (USER)</span>
+                <span class="role-count">{{ roleDistribution.users }} · {{ roleUserPct }}%</span>
+              </div>
+              <div class="role-track"><div class="role-bar green-bar" [style.width.%]="roleUserPct"></div></div>
+            </div>
+            <div class="role-item">
+              <div class="role-row">
+                <span>Administrateurs (ADMIN)</span>
+                <span class="role-count">{{ roleDistribution.admins }} · {{ roleAdminPct }}%</span>
+              </div>
+              <div class="role-track"><div class="role-bar red-bar" [style.width.%]="roleAdminPct"></div></div>
+            </div>
+            @if (topSubjects.length > 0) {
+              <div class="role-divider">Top matières · heures</div>
+              @for (s of topSubjects; track s.subject) {
+                <div class="role-item">
+                  <div class="role-row">
+                    <span class="subject-name">{{ s.subject }}</span>
+                    <span class="role-count">{{ s.totalHours }}h</span>
+                  </div>
+                  <div class="role-track">
+                    <div class="role-bar blue-bar" [style.width.%]="(s.totalHours / topSubjects[0].totalHours) * 100"></div>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="role-divider">Top matières</div>
+              <div class="no-data-dark">Aucune session enregistrée.</div>
+            }
+            <div class="role-footer">
+              {{ overviewStats.totalUsers }} utilisateurs ·
+              {{ overviewStats.totalStudyHours }}h cumulées ·
+              {{ overviewStats.avgStudyPerUser | number:'1.0-1' }}h/user
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ══════════════════════ UTILISATEURS ══════════════════════ -->
+  @if (activeTab() === 'users') {
+    <section class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <div>
+            <div class="table-title">Gestion des utilisateurs</div>
+            <div class="table-sub">
+              {{ filteredUsers.length }} compte(s) · {{ roleDistribution.users }} USER · {{ roleDistribution.admins }} ADMIN
+            </div>
+          </div>
+          <div class="table-actions">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Nom, email ou identifiant…"
+                [value]="userSearchQuery" (input)="onUserSearchInput($event)">
+            </div>
+            <select class="role-select" (change)="onRoleFilterChange($event)">
+              <option value="all">Tous les rôles</option>
+              <option value="ADMIN">Admin</option>
+              <option value="USER">Utilisateur</option>
+            </select>
+            <button class="btn-invite" (click)="openInvite()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              Inviter
+            </button>
+          </div>
+        </div>
+
+        @if (usersLoading) {
+          <!-- Skeleton rows au lieu d'un spinner bloquant -->
+          <div class="skeleton-table">
+            @for (i of [1,2,3,4,5]; track i) {
+              <div class="skeleton-row">
+                <div class="sk sk-avatar"></div>
+                <div class="sk sk-text-lg"></div>
+                <div class="sk sk-badge"></div>
+                <div class="sk sk-text-sm"></div>
+                <div class="sk sk-text-sm"></div>
+                <div class="sk sk-text-sm"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>COMPTE</th>
+                <th>RÔLE</th>
+                <th>HEURES</th>
+                <th>SESSIONS</th>
+                <th>TERMINÉES</th>
+                <th>ÉTAT</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUsers; track user.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" [class.avatar-admin]="user.role==='ADMIN'">{{ getInitials(user.name) }}</div>
+                      <div>
+                        <div class="user-name">{{ user.name }}</div>
+                        <div class="user-email">{{ user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="role-badge" [class.admin-badge]="user.role==='ADMIN'||user.role==='ROLE_ADMIN'">
+                      {{ (user.role==='ADMIN'||user.role==='ROLE_ADMIN') ? 'Admin' : 'Utilisateur' }}
+                    </span>
+                  </td>
+                  <td class="hours-cell">
+                    @if (user.role==='ADMIN'||user.role==='ROLE_ADMIN') { <span class="muted-dash">—</span> }
+                    @else { {{ user.studyHours }}h }
+                  </td>
+                  <td class="hours-cell">
+                    @if (user.role==='ADMIN'||user.role==='ROLE_ADMIN') { <span class="muted-dash">—</span> }
+                    @else { {{ user.sessions }} }
+                  </td>
+                  <td class="hours-cell">
+                    @if (user.role==='ADMIN'||user.role==='ROLE_ADMIN') { <span class="muted-dash">—</span> }
+                    @else { {{ user.completedSessions }} }
+                  </td>
+                  <td>
+                    @if (user.role==='ADMIN'||user.role==='ROLE_ADMIN') {
+                      <span class="status-dot active"></span><span class="status-text">admin</span>
+                    } @else {
+                      <span class="status-dot" [class]="user.status"></span>
+                      <span class="status-text">{{ user.status }}</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="icon-btn" title="Modifier" (click)="openEdit(user)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button class="icon-btn danger" title="Supprimer" (click)="deleteUser(user.id)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+              @if (filteredUsers.length === 0) {
+                <tr><td colspan="7" class="empty-row">Aucun utilisateur trouvé.</td></tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+
+    @if (showInviteModal) {
+      <div class="modal-overlay" (click)="closeInvite()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">Créer un compte</div>
+          <div class="modal-body">
+            <label>NOM COMPLET</label><input [(ngModel)]="inviteForm.name"     type="text"     placeholder="Yasmine Bensalah">
+            <label>IDENTIFIANT</label>  <input [(ngModel)]="inviteForm.username" type="text"   placeholder="yasmine">
+            <label>EMAIL</label>         <input [(ngModel)]="inviteForm.email"    type="email"  placeholder="yasmine@loci.app">
+            <label>MOT DE PASSE</label>  <input [(ngModel)]="inviteForm.password" type="password" placeholder="••••••••">
+            <label>RÔLE</label>
+            <select [(ngModel)]="inviteForm.role">
+              <option value="USER">Utilisateur</option>
+              <option value="ADMIN">Administrateur</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-ghost" (click)="closeInvite()">Annuler</button>
+            <button class="btn-dark"  (click)="submitInvite()">Créer</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (editingUser) {
+      <div class="modal-overlay" (click)="closeEdit()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">Modifier {{ editingUser.name }}</div>
+          <div class="modal-body">
+            <label>NOM COMPLET</label><input [(ngModel)]="editForm.name"  type="text"  placeholder="Nom complet">
+            <label>EMAIL</label>       <input [(ngModel)]="editForm.email" type="email" placeholder="email@loci.app">
+          </div>
+          <div class="modal-footer">
+            <button class="btn-ghost" (click)="closeEdit()">Annuler</button>
+            <button class="btn-dark"  (click)="submitEdit()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- ══════════════════════ GROUPES ═══════════════════════════ -->
+  @if (activeTab() === 'groups') {
+    <section class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <div>
+            <div class="table-title">Groupes</div>
+            <div class="table-sub">{{ filteredGroups.length }} / {{ groups.length }} groupe(s)</div>
+          </div>
+          <div class="table-actions">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Nom ou propriétaire…"
+                [value]="groupSearchQuery" (input)="onGroupSearchInput($event)">
+            </div>
+          </div>
+        </div>
+
+        @if (groupsLoading) {
+          <div class="skeleton-table">
+            @for (i of [1,2,3]; track i) {
+              <div class="skeleton-row">
+                <div class="sk sk-avatar-sq"></div>
+                <div class="sk sk-text-lg"></div>
+                <div class="sk sk-badge"></div>
+                <div class="sk sk-text-sm"></div>
+                <div class="sk sk-text-sm"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>NOM DU GROUPE</th>
+                <th>MEMBRES</th>
+                <th>PROPRIÉTAIRE</th>
+                <th>CRÉÉ LE</th>
+                <th>STATUT</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of filteredGroups; track g.id) {
+                <tr>
+                  <td>
+                    <div class="group-cell">
+                      <div class="group-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      </div>
+                      <span class="user-name">{{ g.name }}</span>
+                    </div>
+                  </td>
+                  <td><span class="member-badge">{{ g.memberCount }}</span></td>
+                  <td>
+                    <div class="owner-cell">
+                      <span class="owner-username">&#64;{{ g.ownerUsername }}</span>
+                      <span class="owner-email">{{ g.ownerEmail }}</span>
+                    </div>
+                  </td>
+                  <td class="hours-cell">{{ formatDate(g.createdAt) }}</td>
+                  <td>
+                    <span class="group-status-badge"
+                          [class.status-active]="g.status === 'ACTIVE'"
+                          [class.status-inactive]="g.status !== 'ACTIVE'">
+                      <span class="status-dot-sm"></span>
+                      {{ g.status === 'ACTIVE' ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (filteredGroups.length === 0) {
+                <tr><td colspan="5" class="empty-row">Aucun groupe trouvé.</td></tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ══════════════════════ MON COMPTE ════════════════════════ -->
+  @if (activeTab() === 'account') {
+    <section class="tab-content account-layout">
+
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="table-title">Mes informations</span>
+          <button class="edit-btn" (click)="accountEditMode = !accountEditMode">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            {{ accountEditMode ? 'Annuler' : 'Modifier' }}
+          </button>
+        </div>
+
+        <div class="avatar-row">
+          <div class="avatar-lg">{{ getInitials(account.name) }}</div>
+          <div>
+            <div class="account-name">{{ account.name || '…' }}</div>
+            <div class="account-meta">{{ account.role }} · &#64;{{ account.username }}</div>
+          </div>
+        </div>
+
+        @if (account.name === '⚠ Accès refusé') {
+          <div class="alert-banner">
+            ⚠ L'admin n'a pas accès à <code>/users/me</code>.<br>
+            Corriger <code>&#64;PreAuthorize</code> → <code>hasAnyRole('USER','ADMIN')</code> dans <strong>UserController</strong>.
+          </div>
+        }
+
+        <div class="info-grid">
+          <div class="info-field">
+            <label>NOM COMPLET</label>
+            @if (accountEditMode) { <input [(ngModel)]="account.name"  type="text"> }
+            @else { <div class="field-val">{{ account.name  || '—' }}</div> }
+          </div>
+          <div class="info-field">
+            <label>EMAIL</label>
+            @if (accountEditMode) { <input [(ngModel)]="account.email" type="email"> }
+            @else { <div class="field-val">{{ account.email || '—' }}</div> }
+          </div>
+          <div class="info-field">
+            <label>IDENTIFIANT</label>
+            <div class="field-val muted">{{ account.username || '—' }}</div>
+          </div>
+          <div class="info-field">
+            <label>RÔLE</label>
+            <div class="field-val muted">{{ account.role || '—' }}</div>
+          </div>
+        </div>
+
+        @if (accountSuccess) { <div class="success-msg green-msg">{{ accountSuccess }}</div> }
+
+        @if (accountEditMode) {
+          <div class="info-save-row">
+            <button class="btn-dark" (click)="saveAccount()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Enregistrer
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="pwd-card">
+        <div class="pwd-title">Mot de passe</div>
+        <div class="pwd-hint">Minimum 8 caractères, une majuscule, un chiffre.</div>
+        <div class="pwd-form">
+          <label>MOT DE PASSE ACTUEL</label>
+          <input type="password" [(ngModel)]="passwordForm.current" placeholder="••••••••">
+          <label>NOUVEAU MOT DE PASSE</label>
+          <input type="password" [(ngModel)]="passwordForm.newPwd"  placeholder="••••••••">
+          <label>CONFIRMER</label>
+          <input type="password" [(ngModel)]="passwordForm.confirm" placeholder="••••••••">
+          @if (pwdError)   { <div class="feedback error-msg">{{ pwdError }}</div> }
+          @if (pwdSuccess) { <div class="feedback success-msg">{{ pwdSuccess }}</div> }
+          <button class="btn-pwd" (click)="changePassword()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Mettre à jour
+          </button>
+        </div>
+      </div>
+
+    </section>
+  }
+
+</div>

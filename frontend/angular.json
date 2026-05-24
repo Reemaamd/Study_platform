@@ -9,7 +9,15 @@
   "projects": {
     "frontend": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+  "@schematics/angular:component": {
+    "standalone": true,
+    "flat": false,
+    "style": "css",
+    "skipTests": false,
+    "type": "component"
+  }
+},
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",

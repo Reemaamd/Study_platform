@@ -88,4 +88,16 @@ public class StatisticsController {
     public List<Map<String, Object>> weeklyTrend() {
         return service.getWeeklyTrend();
     }
+    // 1) Tous les utilisateurs (USER + ADMIN) — pour la table users
+    @GetMapping("/admin/all-users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<Map<String, Object>> getAllUsers() {
+        return service.getAllUsers();
+    }
+    // 2) Tous les groupes — pour la table groups (admin view)
+    @GetMapping("/admin/groups")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<Map<String, Object>> getAllGroups() {
+        return service.getAllGroupsForAdmin();
+    }
 }
