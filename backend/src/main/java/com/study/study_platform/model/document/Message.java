@@ -2,6 +2,7 @@ package com.study.study_platform.model.document;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,6 @@ public class Message {
     private String groupId;
 
     private String content;
-
+    @Indexed
     private LocalDateTime createdAt;
 }

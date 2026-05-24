@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/users/**").hasRole("USER")
+                        .requestMatchers("/users/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/users/availabilities/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
@@ -76,4 +76,3 @@ public class SecurityConfig {
         return authProvider;
     }
 }
-
