@@ -20,6 +20,8 @@ public class StatisticsService {
     private final ObjectiveRepository objectiveRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
+
 
     // ─────────────────────────────────────────
     // HELPER — récupérer user connecté
@@ -501,5 +503,72 @@ public List<SubjectStatsDTO> getSubjectStats(String username) {
                     );
                 })
                 .toList();
+    // ══════════════════════════════════════════════════════════════
+// AJOUTS dans AdminService (ou StatisticsService selon ton archi)
+// ══════════════════════════════════════════════════════════════
+
+    // 1) Tous les users (USER + ADMIN) avec leurs stats
+    public List<Map<String, Object>> getAllUsers() {
+        List<Utilisateur> allUsers = userRepository.findAll();
+        List<StudySession> allSessions = sessionRepository.findAll();
+
+        return allUsers.stream().map(user -> {
+            List<StudySession> userSessions = allSessions.stream()
+                    .filter(s -> s.getUserId().equals(user.getId()))
+                    .toList();
+
+            long completed = userSessions.stream()
+                    .filter(s -> s.getStatus() == SessionStatus.DONE)
+                    .count();
+
+            long hours = userSessions.stream()
+                    .filter(s -> s.getStatus() == SessionStatus.DONE)
+                    .mapToLong(this::hoursOf)
+                    .sum();
+
+            // Statut : actif si session dans les 7 derniers jours
+            LocalDateTime limit = LocalDateTime.now().minusDays(7);
+            boolean isActive = userSessions.stream()
+                    .anyMatch(s -> s.getStartTime() != null
+                            && s.getStartTime().isAfter(limit));
+
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id",               user.getId());
+            map.put("name",             user.getName());
+            map.put("username",         user.getUsername());
+            map.put("email",            user.getEmail());
+            map.put("role",             user.getRole().name()); // "USER" ou "ADMIN"
+            map.put("sessions",         userSessions.size());
+            map.put("completedSessions",completed);
+            map.put("studyHours",       hours);
+            map.put("active",           isActive);
+            return map;
+        }).toList();
+    }
+
+    // 2) Tous les groupes avec username du propriétaire
+    public List<Map<String, Object>> getAllGroupsForAdmin() {
+        List<Group> groups = groupRepository.findAll();
+
+        return groups.stream().map(group -> {
+            // Résoudre le username du propriétaire depuis ownerId
+            String ownerUsername = userRepository.findById(group.getOwnerId())
+                    .map(Utilisateur::getUsername)
+                    .orElse("—");
+
+            String ownerEmail = userRepository.findById(group.getOwnerId())
+                    .map(Utilisateur::getEmail)
+                    .orElse("—");
+
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id",           group.getId());
+            map.put("name",         group.getName());
+            //map.put("description",  group.getDescription());
+            map.put("ownerUsername",ownerUsername);
+            map.put("ownerEmail",   ownerEmail);
+            map.put("memberCount",  group.getMemberIds() != null ? group.getMemberIds().size() : 0);
+            map.put("createdAt",    group.getCreatedAt());
+            return map;
+        }).toList();
     }
 }

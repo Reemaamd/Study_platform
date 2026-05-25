@@ -26,35 +26,45 @@ export class LoginComponent {
 
   onLogin() {
 
-    const data = {
-      username: this.username,
-      password: this.password
-    };
+  const data = {
+    username: this.username,
+    password: this.password
+  };
 
-    this.authService.login(data).subscribe({
+  this.authService.login(data).subscribe({
 
-      next: (response) => {
+    next: (response: any) => {
 
-        console.log(response);
+      console.log(response);
 
-        // sauvegarder JWT
-        localStorage.setItem('token', response.token);
+      // sauvegarder JWT
+      localStorage.setItem('token', response.token);
 
-        // sauvegarder infos utilisateur
-        localStorage.setItem('role', response.role);
-        localStorage.setItem('username', response.username);
+      // sauvegarder infos utilisateur
+      localStorage.setItem('role', response.role);
+      localStorage.setItem('username', response.username);
 
         // redirection
         this.router.navigate(['/dashboard']);
       },
+      // redirection selon role
+      if(response.role === 'ADMIN'){
 
-      error: (err) => {
+        this.router.navigate(['/admin']);
 
-        console.log(err);
+      }else{
 
-        this.errorMessage =
-          err.error.error || 'Erreur de connexion';
+        this.router.navigate(['/dashboard']);
       }
-    });
-  }
+    },
+
+    error: (err) => {
+
+      console.log(err);
+
+      this.errorMessage =
+        err.error.error || 'Erreur de connexion';
+    }
+  });
+}
 }

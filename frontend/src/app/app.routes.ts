@@ -32,6 +32,10 @@ export const routes: Routes = [
       .then(m => m.PlanningComponent)
   },
   {
+  path: 'admin',
+  loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
+},
+  {
     path: '**',
     redirectTo: '',
   }
