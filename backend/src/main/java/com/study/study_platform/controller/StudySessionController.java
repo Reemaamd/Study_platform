@@ -1,6 +1,10 @@
 package com.study.study_platform.controller;
 
+import com.study.study_platform.dto.StudySessionDTO;
 import com.study.study_platform.model.document.StudySession;
+import com.study.study_platform.model.document.Utilisateur;
+import com.study.study_platform.repository.StudySessionRepository;
+import com.study.study_platform.repository.UserRepository;
 import com.study.study_platform.service.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,20 +23,37 @@ public class StudySessionController {
 
     private final StudySessionService service;
 
+
     @PostMapping("/generate")
     public List<StudySession> generate(
             @AuthenticationPrincipal UserDetails userDetails) {
 
         return service.generateWeeklyPlan(userDetails.getUsername());
     }
+
     @PutMapping("/{id}/complete")
     public StudySession completeSession(
             @PathVariable String id,
             Authentication authentication
     ) {
 
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
         String username = authentication.getName();
 
         return service.completeSession(id, username);
+    }
+
+    @GetMapping
+    public List<StudySessionDTO> getUserSessions(
+            @AuthenticationPrincipal UserDetails u
+    ) {
+
+        return service
+                .getUserSessionsThisWeek(
+                        u.getUsername()
+                );
     }
 }

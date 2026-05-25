@@ -45,6 +45,9 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/users/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/users/availabilities/**").hasRole("USER")
+                        .requestMatchers("/study-sessions/**").hasRole("USER")
+                        .requestMatchers("/onboarding/**").hasRole("USER")
+                        .requestMatchers("/statistics/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 

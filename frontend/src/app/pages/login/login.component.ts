@@ -44,6 +44,9 @@ export class LoginComponent {
       localStorage.setItem('role', response.role);
       localStorage.setItem('username', response.username);
 
+        // redirection
+        this.router.navigate(['/dashboard']);
+      },
       // redirection selon role
       if(response.role === 'ADMIN'){
 

@@ -188,7 +188,7 @@ public class StatisticsService {
     // ─────────────────────────────────────────
     // 5. SUBJECT STATS (distribution + performance)
     // ─────────────────────────────────────────
-    public List<SubjectStatsDTO> getSubjectStats(String username) {
+   /* public List<SubjectStatsDTO> getSubjectStats(String username) {
 
         String userId = getUser(username).getId();
         List<StudySession> sessions = sessionRepository.findByUserId(userId);
@@ -225,7 +225,7 @@ public class StatisticsService {
                 }).sorted(Comparator.comparingLong(SubjectStatsDTO::getTotalHours).reversed())
                 .toList();
     }
-
+*/
     // ─────────────────────────────────────────
     // 6. DAILY HOURS
     // ─────────────────────────────────────────
@@ -384,31 +384,54 @@ public class StatisticsService {
         }).toList();
     }
 //SUBJECTS GLOBAL POPULARITY
-    public List<Map<String, Object>> getSubjectsStats() {
+public List<SubjectStatsDTO> getSubjectStats(String username) {
 
-        List<Subject> subjects = subjectRepository.findAll();
-        List<StudySession> sessions = sessionRepository.findAll();
+    // Récupérer l'utilisateur
+    Utilisateur user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return subjects.stream().map(subject -> {
+    // Subjects de cet utilisateur uniquement
+    List<Subject> subjects = subjectRepository.findByUserId(user.getId());
 
-            List<StudySession> subjectSessions = sessions.stream()
-                    .filter(s -> s.getSubjectId().equals(subject.getId()))
-                    .toList();
+    // Sessions de cet utilisateur uniquement
+    List<StudySession> sessions = sessionRepository.findByUserId(user.getId());
 
-            long totalHours = subjectSessions.stream()
-                    .filter(s -> s.getStatus() == SessionStatus.DONE)
-                    .mapToLong(this::hoursOf)
-                    .sum();
+    // Total heures DONE (pour calculer le pourcentage)
+    long totalDoneHours = sessions.stream()
+            .filter(s -> s.getStatus() == SessionStatus.DONE)
+            .mapToLong(this::hoursOf)
+            .sum();
 
-            Map<String, Object> map = new HashMap<>();
-            map.put("subject", subject.getName());
-            map.put("totalSessions", subjectSessions.size());
-            map.put("totalHours", totalHours);
+    return subjects.stream().map(subject -> {
 
-            return map;
+        List<StudySession> subjectSessions = sessions.stream()
+                .filter(s -> subject.getId().equals(s.getSubjectId()))
+                .toList();
 
-        }).toList();
-    }
+        long doneHours = subjectSessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.DONE)
+                .mapToLong(this::hoursOf)
+                .sum();
+
+        long plannedHours = subjectSessions.stream()
+                .filter(s -> s.getStatus() != SessionStatus.DONE)
+                .mapToLong(this::hoursOf)
+                .sum();
+
+        // Pourcentage = heures faites / total heures planifiées du subject
+        long totalSubjectHours = doneHours + plannedHours;
+        double percentage = totalSubjectHours > 0
+                ? Math.round((doneHours * 100.0) / totalSubjectHours)
+                : 0;
+
+        return new SubjectStatsDTO(
+                subject.getName(),
+                doneHours,
+                percentage
+        );
+
+    }).toList();
+}
 //📈 WEEKLY PLATFORM TREND
     public List<Map<String, Object>> getWeeklyTrend() {
 
@@ -439,6 +462,47 @@ public class StatisticsService {
             return m;
         }).toList();
     }
+
+
+    public List<TodaySessionDTO> getTodaySessions(String username) {
+
+        Utilisateur user = userRepository.findByUsername(username)
+                .orElseThrow();
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(23, 59, 59);
+
+        List<StudySession> sessions =
+                sessionRepository.findByUserIdAndStartTimeBetween(
+                        user.getId(),
+                        startOfDay,
+                        endOfDay
+                );
+
+        LocalTime now = LocalTime.now();
+
+        return sessions.stream()
+                .map(session -> {
+
+                    boolean active =
+                            now.isAfter(session.getStartTime().toLocalTime())
+                                    && now.isBefore(session.getEndTime().toLocalTime());
+
+                    Subject subject = subjectRepository
+                            .findById(session.getSubjectId())
+                            .orElseThrow();
+
+                    return new TodaySessionDTO(
+                            session.getId(),
+                            subject.getName(),
+                            session.getStartTime().toLocalTime().toString(),
+                            session.getEndTime().toLocalTime().toString(),
+                            active,
+                            "green"
+                    );
+                })
+                .toList();
     // ══════════════════════════════════════════════════════════════
 // AJOUTS dans AdminService (ou StatisticsService selon ton archi)
 // ══════════════════════════════════════════════════════════════

@@ -1,0 +1,111 @@
+<div class="onboarding-shell">
+
+  <!-- LOGO -->
+  <div class="logo">Loci<span class="dot">.</span></div>
+
+  <!-- PROGRESS BAR -->
+  <div class="stepper">
+    <div class="step-segment" [class.active]="step >= 1" [class.done]="step > 1"></div>
+    <span class="step-label" [class.active]="step >= 1">MATIÈRES</span>
+    <div class="step-segment" [class.active]="step >= 2" [class.done]="step > 2"></div>
+    <span class="step-label" [class.active]="step >= 2">OBJECTIFS</span>
+    <div class="step-segment" [class.active]="step >= 3" [class.done]="step > 3"></div>
+    <span class="step-label" [class.active]="step >= 3">DISPONIBILITÉS</span>
+    <div class="step-segment" [class.active]="step >= 4"></div>
+    <span class="step-label" [class.active]="step >= 4">PRÊT</span>
+  </div>
+
+  <!-- ═══════════ STEP 1 — MATIÈRES ═══════════ -->
+  <div class="step-view" *ngIf="step === 1">
+    <h1 class="headline">Que <em>étudiez</em>-vous&nbsp;?</h1>
+    <p class="sub">Ajoutez vos matières ou projets. Vous pourrez les ajuster plus tard.</p>
+
+    <div class="chips-row">
+      <div class="chip" *ngFor="let s of subjects; let i = index" [style.background]="chipColors[i % chipColors.length]">
+        {{ s }}
+        <button class="chip-remove" (click)="removeSubject(i)">×</button>
+      </div>
+
+      <div class="chip add-chip" *ngIf="!addingSubject" (click)="startAdding()">
+        <span>+ Ajouter</span>
+      </div>
+
+      <div class="chip add-chip adding" *ngIf="addingSubject">
+        <input #subjectInput
+               class="chip-input"
+               [(ngModel)]="newSubject"
+               (keydown.enter)="confirmAdd()"
+               (keydown.escape)="cancelAdd()"
+               placeholder="Ex: Maths..."
+               autofocus />
+        <button class="chip-confirm" (click)="confirmAdd()">✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 2 — OBJECTIFS ═══════════ -->
+  <div class="step-view" *ngIf="step === 2">
+    <h1 class="headline">Combien <em>d'heures</em> par semaine&nbsp;?</h1>
+    <p class="sub">Soyez ambitieux mais réaliste.</p>
+
+    <div class="sliders">
+      <div class="slider-row" *ngFor="let s of subjects; let i = index">
+        <div class="slider-meta">
+          <span class="slider-label">{{ s }}</span>
+          <span class="slider-value">{{ objectives[i] || 1 }}h</span>
+        </div>
+        <input type="range" min="1" max="20"
+               [value]="objectives[i] || 1"
+               (input)="setObjective(i, $event)"
+               class="slider" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 3 — DISPONIBILITÉS ═══════════ -->
+  <div class="step-view" *ngIf="step === 3">
+    <h1 class="headline">Quand <em>êtes</em>-vous libre&nbsp;?</h1>
+    <p class="sub">Cochez vos plages habituelles.</p>
+
+    <div class="availability-grid">
+      <div class="grid-corner"></div>
+      <div class="day-header" *ngFor="let d of days">{{ d }}</div>
+
+      <ng-container *ngFor="let slot of slots; let si = index">
+        <div class="slot-label">{{ slot }}</div>
+        <div class="slot-cell"
+             *ngFor="let d of days; let di = index"
+             [class.selected]="isSelected(si, di)"
+             (click)="toggleSlot(si, di)">
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 4 — PRÊT ═══════════ -->
+  <div class="step-view ready-view" *ngIf="step === 4">
+    <h1 class="headline-ready">Tout est prêt.</h1>
+    <p class="sub">Votre première semaine vous attend dans l'atelier.</p>
+
+    <div class="recap-card">
+      <p class="recap-label">RÉCAP</p>
+      <p class="recap-item">· {{ subjects.length }} matière{{ subjects.length > 1 ? 's' : '' }}</p>
+      <p class="recap-item">· {{ totalHours }}h d'objectif hebdo</p>
+      <p class="recap-item">· {{ totalSlots }} plage{{ totalSlots > 1 ? 's' : '' }} déclarée{{ totalSlots > 1 ? 's' : '' }}</p>
+    </div>
+  </div>
+
+  <!-- FOOTER NAV -->
+  <div class="footer-nav">
+    <button class="btn-back" *ngIf="step > 1" (click)="prev()">Retour</button>
+    <span *ngIf="step === 1"></span>
+
+    <button class="btn-next" *ngIf="step < 4" (click)="next()" [disabled]="step === 1 && subjects.length === 0">
+      Continuer →
+    </button>
+    <button class="btn-next" *ngIf="step === 4" (click)="finish()" [disabled]="loading">
+      {{ loading ? 'Enregistrement...' : "Entrer dans l'atelier →" }}
+    </button>
+  </div>
+
+</div>

@@ -44,17 +44,53 @@ export class RegisterComponent {
 
       next: (response) => {
 
-        console.log(response);
+        console.log('Register response:', response);
 
-        this.successMessage =
-          'Compte créé avec succès';
+        // After successful registration, auto-login to get JWT token
+        console.log('🔄 Auto-logging in after registration...');
+        
+        const loginData = {
+          username: this.username,
+          password: this.password
+        };
 
-        this.errorMessage = '';
-
-        // redirection après 2 sec
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        this.authService.login(loginData).subscribe({
+          next: (loginResponse) => {
+            console.log('🔍 Login response:', loginResponse);
+            console.log('🔍 Login response type:', typeof loginResponse);
+            console.log('🔍 Response keys:', Object.keys(loginResponse));
+            
+            // Extract token from response
+            let token = '';
+            if (loginResponse.token) {
+              token = loginResponse.token;
+            } else if (typeof loginResponse === 'string' && loginResponse.includes('eyJ')) {
+              token = loginResponse;
+            } else if (loginResponse.access_token) {
+              token = loginResponse.access_token;
+            }
+            
+            if (!token) {
+              console.error('❌ No valid JWT found in login response!');
+              console.error('Full response:', loginResponse);
+              this.errorMessage = 'Login successful but no JWT token received. Check backend response.';
+              return;
+            }
+            
+            console.log('✅ Login successful, token found:', token.substring(0, 30) + '...');
+            
+            // Save JWT token
+            localStorage.setItem('token', token);
+            localStorage.setItem('username', loginResponse.username);
+            localStorage.setItem('role', loginResponse.role);
+            
+            this.router.navigate(['/onboarding']);
+          },
+          error: (err) => {
+            console.error('❌ Auto-login failed:', err);
+            this.errorMessage = 'Registration successful but login failed. Please log in manually.';
+          }
+        });
       },
 
       error: (err) => {
