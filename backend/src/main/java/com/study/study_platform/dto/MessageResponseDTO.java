@@ -1,20 +1,22 @@
 package com.study.study_platform.dto;
 
-import com.study.study_platform.model.document.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
-    private String id;
-    private String name;
+public class MessageResponseDTO {
 
-    private String username;
-    private String email;
-    private Role role;
+    private String id;
+    private String groupId;
+    private String senderId;
+    private String content;
+    private LocalDateTime createdAt;
 }
+

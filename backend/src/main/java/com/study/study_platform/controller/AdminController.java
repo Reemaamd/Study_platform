@@ -46,9 +46,9 @@ public class AdminController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable String id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         utilisateurService.deleteUtilisateur(id);
-        return ResponseEntity.ok("Utilisateur supprimé avec succès");
+        return ResponseEntity.noContent().build(); // ✅ 204 No Content
     }
 
     @GetMapping

@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent),
   },
   {
+  path: 'admin',
+  loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
+},
+  {
     path: '**',
     redirectTo: '',
   }
