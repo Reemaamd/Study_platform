@@ -1,0 +1,295 @@
+<!-- ════ KEEP DIALOG ════ -->
+<div class="dialog-overlay" *ngIf="showKeepDialog">
+  <div class="dialog-card">
+    <div class="dialog-icon">📅</div>
+    <h2 class="dialog-title">Planning existant</h2>
+    <p class="dialog-body">
+      Vous avez déjà un planning pour cette semaine.<br />
+      Voulez-vous le garder ou en créer un nouveau ?
+    </p>
+    <div class="dialog-actions">
+      <button class="btn-secondary" (click)="keepCurrentPlan()">Garder mon planning</button>
+      <button class="btn-primary"   (click)="startNewPlan()">Créer un nouveau</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SUCCESS ════ -->
+<div class="success-overlay" *ngIf="generationDone">
+  <div class="success-card">
+    <div class="success-icon">✦</div>
+    <h2>Planning généré !</h2>
+    <p>Votre semaine est prête. Redirection en cours…</p>
+  </div>
+</div>
+
+<!-- ════ LOADING ════ -->
+<div class="loading-overlay" *ngIf="loadingData">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <p>Chargement de vos données…</p>
+  </div>
+</div>
+
+<!-- ════ MAIN PAGE ════ -->
+<div class="page-root" [class.blurred]="showKeepDialog || loadingData">
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="top-brand">
+      <span class="top-brand-dot"></span>
+      <span class="top-label">ATELIER · STUDIO DE GÉNÉRATION</span>
+    </div>
+    <span class="top-user">
+      <span class="top-user-dot"></span>
+      {{ username }}
+    </span>
+  </header>
+
+  <!-- Hero + Stats -->
+  <section class="hero-row">
+    <div class="hero-text">
+      <div class="hero-eyebrow">Semaine du {{ getCurrentWeekKey() }}</div>
+      <h1 class="hero-title">Composez votre <em>semaine</em></h1>
+      <p class="hero-sub">
+        Définissez vos matières, objectifs et disponibilités.
+        Le moteur IA génère un planning optimal selon vos contraintes.
+      </p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-chip">
+        <span class="stat-value">{{ subjects.length }}</span>
+        <span class="stat-label">Matières</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-value">{{ totalObjectives }}</span>
+        <span class="stat-label">Objectifs</span>
+      </div>
+      <div class="stat-chip stat-chip--accent">
+        <span class="stat-value">{{ totalAvailableHours }}h</span>
+        <span class="stat-label">Disponibles</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 01 · INTENTION ══ -->
+  <div class="section-wrap">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-num">01</span>
+        <div class="card-title-block">
+          <span class="card-icon">◎</span>
+          <span class="card-title">Intention de la semaine</span>
+        </div>
+      </div>
+      <textarea class="intent-textarea"
+        placeholder="Préparer partiel algèbre, finir projet algo, présentation anglais…"
+        [(ngModel)]="weekIntent" rows="3"></textarea>
+      <div class="chip-row">
+        <button *ngFor="let chip of intentChips" class="chip" (click)="appendChip(chip)">{{ chip }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 02 · MATIÈRES ══ -->
+  <div class="section-wrap">
+    <div class="card full-card">
+      <div class="card-header">
+        <span class="card-num">02</span>
+        <div class="card-title-block">
+          <span class="card-icon">📖</span>
+          <span class="card-title">Matières &amp; Objectifs</span>
+        </div>
+        <span class="card-badge">{{ subjects.length }} matière{{ subjects.length !== 1 ? 's' : '' }}</span>
+      </div>
+      <p class="card-sub">
+        Chaque objectif a une priorité <strong>unique</strong> au sein de sa matière et un objectif hebdomadaire en heures.
+      </p>
+
+      <div class="subject-list">
+        <div class="subject-card" *ngFor="let subject of subjects; let si = index; trackBy: trackById">
+
+          <div class="subject-header" (click)="toggleSubject(si)">
+            <div class="subject-color-bar" [style.background]="subject.color.hex"></div>
+            <button class="chevron-btn">
+              <span [class.rotated]="subject.expanded">›</span>
+            </button>
+            <span class="subject-dot" [style.background]="subject.color.hex"></span>
+            <span class="subject-name">{{ subject.name }}</span>
+            <div class="subject-meta-row">
+              <span class="subject-meta">
+                {{ subject.objectives.length }} obj{{ subject.objectives.length !== 1 ? 's' : '' }}
+              </span>
+              <span class="badge-backend" *ngIf="subject.fromBackend">existant</span>
+            </div>
+            <div class="subject-actions" (click)="$event.stopPropagation()">
+              <button class="add-obj-btn" (click)="addObjective(si)">+ Objectif</button>
+              <button class="remove-btn" (click)="removeSubject(si)">×</button>
+            </div>
+          </div>
+
+          <div class="objectives-panel" *ngIf="subject.expanded">
+
+            <!-- Header colonnes -->
+            <div class="obj-columns-header" *ngIf="subject.objectives.length > 0">
+              <span class="obj-col-label">OBJECTIF</span>
+              <span class="obj-col-label">PRIORITÉ <span class="col-hint">(unique, 1 = plus haute)</span></span>
+              <span class="obj-col-label">OBJECTIF HEBDO (h)</span>
+            </div>
+
+            <div class="objective-row"
+              *ngFor="let obj of subject.objectives; let oi = index; trackBy: trackById">
+
+              <!-- Titre -->
+              <div class="obj-field obj-field--title">
+                <input class="obj-title-input" type="text"
+                  placeholder="Nom de l'objectif…"
+                  [(ngModel)]="obj.title" />
+              </div>
+
+              <!-- Priorité numérique unique -->
+              <div class="obj-field obj-field--priority">
+                <div class="priority-numbers">
+                  <button
+                    *ngFor="let n of globalPriorityRange"
+                    class="priority-num-btn"
+                    [class.active]="obj.priorityNum === n"
+                    [class.taken]="isPriorityTaken(si, oi, n)"
+                    [disabled]="isPriorityTaken(si, oi, n)"
+                    [attr.data-rank]="n"
+                    (click)="setPriorityNum(si, oi, n)">
+                    {{ n }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Weekly goal (heures) -->
+              <div class="obj-field obj-field--goal">
+                <div class="goal-control">
+                  <button class="goal-btn" (click)="decreaseGoal(si, oi)">−</button>
+                  <span class="goal-value">{{ obj.weeklyGoal }}h</span>
+                  <button class="goal-btn" (click)="increaseGoal(si, oi)">+</button>
+                </div>
+              </div>
+
+              <button class="remove-btn-sm" (click)="removeObjective(si, oi)">×</button>
+            </div>
+
+            <div class="empty-obj" *ngIf="subject.objectives.length === 0">
+              Aucun objectif — cliquez sur <strong>+ Objectif</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-subject-row">
+        <input class="add-subject-input" type="text"
+          placeholder="Nouvelle matière (ex. Physique)…"
+          [(ngModel)]="newSubjectName"
+          (keydown.enter)="addSubject()" />
+        <button class="btn-add-subject" (click)="addSubject()">+ Matière</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 03 · DISPONIBILITÉS ══ -->
+  <div class="section-wrap">
+    <div class="card full-card">
+      <div class="card-header">
+        <span class="card-num">03</span>
+        <div class="card-title-block">
+          <span class="card-icon">🕐</span>
+          <span class="card-title">Disponibilités de la semaine</span>
+        </div>
+        <span class="card-badge avail-badge" *ngIf="totalAvailableHours > 0">
+          {{ totalAvailableHours }}h disponibles
+        </span>
+      </div>
+      <p class="card-sub">Définissez vos créneaux horaires pour chaque jour. Le planning sera généré dans ces plages.</p>
+
+      <div class="avail-grid">
+        <div class="avail-day-block" *ngFor="let day of days">
+
+          <div class="avail-day-header">
+            <div class="avail-day-left">
+              <span class="avail-day-name">{{ daysFull[day] }}</span>
+              <span class="avail-day-abr">{{ day }}</span>
+            </div>
+            <div class="avail-slots-summary" *ngIf="daySlots[day].length > 0">
+              <div class="slot-pill" *ngFor="let slot of daySlots[day]; let si = index">
+                <span class="slot-pill-time">
+                  {{ formatTime(slot.startHour, slot.startMin) }}
+                  <span class="slot-pill-sep">→</span>
+                  {{ formatTime(slot.endHour, slot.endMin) }}
+                </span>
+                <span class="slot-pill-dur">{{ slotDuration(slot) }}</span>
+                <button class="slot-pill-remove" (click)="removeSlot(day, si)">×</button>
+              </div>
+            </div>
+            <span class="avail-empty-hint" *ngIf="daySlots[day].length === 0">Aucun créneau</span>
+          </div>
+
+          <!-- Formulaire ajout -->
+          <div class="slot-add-form">
+            <div class="time-inputs">
+              <div class="time-group">
+                <label class="time-label">Début</label>
+                <div class="time-selects">
+                  <select class="time-select" [(ngModel)]="newSlot[day].startHour">
+                    <option *ngFor="let h of hours" [value]="h">{{ h | number:'2.0-0' }}h</option>
+                  </select>
+                  <select class="time-select" [(ngModel)]="newSlot[day].startMin">
+                    <option *ngFor="let m of minutes" [value]="m">:{{ m | number:'2.0-0' }}</option>
+                  </select>
+                </div>
+              </div>
+              <span class="time-arrow">→</span>
+              <div class="time-group">
+                <label class="time-label">Fin</label>
+                <div class="time-selects">
+                  <select class="time-select" [(ngModel)]="newSlot[day].endHour">
+                    <option *ngFor="let h of hours" [value]="h">{{ h | number:'2.0-0' }}h</option>
+                  </select>
+                  <select class="time-select" [(ngModel)]="newSlot[day].endMin">
+                    <option *ngFor="let m of minutes" [value]="m">:{{ m | number:'2.0-0' }}</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn-add-slot" (click)="addSlot(day)">
+                <span>Ajouter</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CTA ══ -->
+  <div class="cta-footer">
+    <div class="cta-info">
+      <span class="cta-eyebrow">Prêt à générer</span>
+      <h2 class="cta-title">Tisser le planning</h2>
+      <p class="cta-meta">
+        <span class="cta-stat">{{ subjects.length }} matière{{ subjects.length !== 1 ? 's' : '' }}</span>
+        <span class="cta-dot">·</span>
+        <span class="cta-stat">{{ totalObjectives }} objectif{{ totalObjectives !== 1 ? 's' : '' }}</span>
+        <span class="cta-dot">·</span>
+        <span class="cta-stat">{{ totalAvailableHours }}h disponibles</span>
+      </p>
+    </div>
+    <button class="btn-generate" (click)="generatePlan()" [disabled]="generating">
+      <span *ngIf="!generating">✦ Générer la semaine →</span>
+      <span *ngIf="generating" class="generating-text">
+        <span class="gen-dot"></span>Génération en cours…
+      </span>
+    </button>
+  </div>
+
+  <div class="error-banner" *ngIf="errorMsg">
+    <span class="error-icon">⚠</span>
+    {{ errorMsg }}
+  </div>
+
+</div>
