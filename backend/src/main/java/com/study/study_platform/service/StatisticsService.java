@@ -503,6 +503,7 @@ public List<SubjectStatsDTO> getSubjectStats(String username) {
                     );
                 })
                 .toList();
+    }
     // ══════════════════════════════════════════════════════════════
 // AJOUTS dans AdminService (ou StatisticsService selon ton archi)
 // ══════════════════════════════════════════════════════════════

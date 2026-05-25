@@ -115,6 +115,7 @@ public class StatisticsController {
         int streak = sessionService.calculateFocusStreak(user.getId());
 
         return new StreakResponse(streak);
+    }
     // 1) Tous les utilisateurs (USER + ADMIN) — pour la table users
     @GetMapping("/admin/all-users")
     @PreAuthorize("hasRole('ADMIN')")
