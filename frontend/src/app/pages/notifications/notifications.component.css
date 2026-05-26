@@ -1,0 +1,459 @@
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════ */
+:host {
+  --bg:             #f0ece3;
+  --bg-card:        #ffffff;
+  --bg-card-alt:    #faf8f4;
+  --bg-deep:        #1a1814;
+
+  --border:         #e2d9cc;
+  --border-med:     #c9bfaf;
+
+  --ink:            #1a1814;
+  --ink-2:          #2e2a24;
+  --muted:          #7a7060;
+  --subtle:         #b0a898;
+
+  --accent:         #c8602a;
+  --accent-light:   #f5ddd0;
+  --accent-2:       #3d6b4f;
+  --accent-2-light: #d4ead9;
+
+  --amber:          #d4a428;
+  --amber-light:    #fdf3d0;
+  --blue:           #2e5fa3;
+  --blue-light:     #d5e4f7;
+  --rose:           #b04060;
+  --rose-light:     #f8d8e0;
+
+  /* Card backgrounds — non lues */
+  --c-warning:      #fff0dc;
+  --c-rappel:       #fde8e8;
+  --c-planning:     #dceeff;
+  --c-objectif:     #fef5d6;
+  --c-default:      #f0ece3;
+
+  /* Card backgrounds — lues (grises, délavées) */
+  --c-read:         #f5f3ef;
+
+  --radius-sm:      10px;
+  --radius-md:      16px;
+  --radius-lg:      22px;
+
+  --shadow-xs:      0 1px 3px rgba(0,0,0,.06);
+  --shadow-sm:      0 2px 10px rgba(0,0,0,.07);
+  --shadow-md:      0 6px 24px rgba(0,0,0,.09);
+
+  --font-serif:     'Georgia', 'Times New Roman', serif;
+  --font-body:      'Helvetica Neue', Arial, sans-serif;
+  --font-mono:      'SF Mono', 'Fira Mono', monospace;
+
+  --transition:     .2s cubic-bezier(.4,0,.2,1);
+
+  display: block;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE ROOT
+═══════════════════════════════════════════════════════════ */
+.notif-page {
+  min-height: 100vh;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 55% 35% at 85% 8%,  rgba(200,96,42,.07), transparent),
+    radial-gradient(ellipse 45% 55% at 8%  85%,  rgba(61,107,79,.05), transparent);
+  font-family: var(--font-body);
+  color: var(--ink);
+  padding-bottom: 80px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════════════════════ */
+.notif-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(240,236,227,.75);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.topbar-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO HEADER
+═══════════════════════════════════════════════════════════ */
+.notif-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 48px 48px 36px;
+  flex-wrap: wrap;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.notif-title {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: -.025em;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+}
+
+/* Badge non-lues — animé quand il change */
+.unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--accent-light);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), background var(--transition);
+  animation: badgePop .35s cubic-bezier(.34,1.56,.64,1);
+}
+/* Le badge "pop" à chaque changement de valeur */
+@keyframes badgePop {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+.mark-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1.5px solid var(--border-med);
+  border-radius: 999px;
+  padding: 11px 24px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+.mark-all-btn:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.mark-all-btn:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTENT AREA
+═══════════════════════════════════════════════════════════ */
+.notif-content {
+  padding: 0 48px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GROUP
+═══════════════════════════════════════════════════════════ */
+.notif-group {
+  margin-bottom: 36px;
+}
+
+.group-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 14px 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION CARD
+═══════════════════════════════════════════════════════════ */
+.notif-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  animation: slideIn 0.35s ease both;
+
+  /* Toutes les propriétés visuelles en transition — changement visible au markRead */
+  transition:
+    background     .4s ease,
+    border-color   .4s ease,
+    opacity        .4s ease,
+    transform      var(--transition),
+    box-shadow     var(--transition),
+    filter         .4s ease;
+
+  background: var(--c-default);
+  overflow: hidden;
+}
+
+/* Barre colorée à gauche — disparaît quand lue */
+.notif-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+  background: var(--accent);
+  transition: opacity .4s ease, width .4s ease;
+  opacity: 0;
+}
+.notif-card:not(.is-read)::before { opacity: 1; }
+
+.notif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── État LU : fond neutre gris-beige, désaturé, légèrement transparent ── */
+.notif-card.is-read {
+  background    : var(--c-read) !important;
+  border-color  : var(--border) !important;
+  opacity       : .7;
+  filter        : saturate(.4);
+}
+/* Quand lu ET survolé, on redonne un peu de vie */
+.notif-card.is-read:hover {
+  opacity : .85;
+  filter  : saturate(.6);
+  transform: translateY(-1px);
+}
+
+/* ── Variantes couleur NON LUES ── */
+.notif-warning  { background: var(--c-warning);  border-color: rgba(212,164,40,.3); }
+.notif-warning::before  { background: var(--amber); }
+
+.notif-rappel   { background: var(--c-rappel);   border-color: rgba(176,64,96,.2); }
+.notif-rappel::before   { background: var(--rose); }
+
+.notif-planning { background: var(--c-planning);  border-color: rgba(46,95,163,.22); }
+.notif-planning::before { background: var(--blue); }
+
+.notif-objectif { background: var(--c-objectif);  border-color: rgba(61,107,79,.22); }
+.notif-objectif::before { background: var(--accent-2); }
+
+.notif-default  { background: var(--c-default);   border-color: var(--border); }
+
+/* ── Dot non-lu / lu ── */
+.dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-light);
+  transition: background .35s ease, border .35s ease, box-shadow .35s ease;
+  flex-shrink: 0;
+}
+.dot.dot-read {
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px solid var(--subtle);
+}
+
+/* ── Icône ── */
+.notif-icon-wrap {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.65);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,.9);
+  box-shadow: var(--shadow-xs);
+  transition: filter .4s ease;
+}
+.notif-card.is-read .notif-icon-wrap {
+  filter: grayscale(.7);
+}
+
+/* ── Corps ── */
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+.notif-message {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  word-break: break-word;
+  letter-spacing: -.01em;
+  transition: color .4s ease, font-weight .4s ease;
+}
+/* Message lu : texte moins gras, plus doux */
+.notif-card.is-read .notif-message {
+  font-weight : 400;
+  color       : var(--muted);
+}
+.notif-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Tag type ── */
+.notif-type-tag {
+  flex-shrink: 0;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 20px;
+  padding: 4px 10px;
+  align-self: flex-start;
+  white-space: nowrap;
+  transition: opacity .4s ease;
+}
+.notif-card.is-read .notif-type-tag {
+  opacity: .5;
+}
+
+/* ── Check mark visible sur les cartes lues ── */
+.notif-read-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-2-light);
+  border: 1.5px solid rgba(61,107,79,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--accent-2);
+  opacity: 0;
+  transform: scale(.5);
+  transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+}
+.notif-card.is-read .notif-read-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ÉTATS — loading & vide
+═══════════════════════════════════════════════════════════ */
+.notif-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 100px 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-family: var(--font-body);
+}
+.empty-icon { font-size: 52px; }
+
+.spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .notif-hero    { padding: 32px 20px 24px; }
+  .notif-topbar  { padding: 16px 20px; }
+  .notif-content { padding: 0 20px; }
+}
+@media (max-width: 500px) {
+  .notif-type-tag { display: none; }
+  .notif-card     { padding: 16px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

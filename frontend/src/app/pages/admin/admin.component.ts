@@ -218,7 +218,7 @@ export class AdminComponent implements OnInit {
         this.buildRoleDistribution();
         this.applyUserFilter();
         // Charger groupes après users pour que le fallback puisse résoudre ownerId
-        this.loadGroups();
+        //this.loadGroups();
       });
   }
 
@@ -305,43 +305,19 @@ export class AdminComponent implements OnInit {
   // GROUPS — finalize garanti, fallback enrichi depuis this.users
   // ══════════════════════════════════════════════════════════════
   loadGroups(): void {
-    this.groupsLoading = true;
+  this.groupsLoading = true;
 
-    // Essai endpoint admin dédié
-    const adminGroups$ = this.http
-      .get<AdminGroup[]>(`${this.baseUrl}/admin/groups`, { headers: this.h() })
-      .pipe(catchError(() => of(null)));
-
-    // Fallback : /groups (groupes de l'admin connecté)
-    const myGroups$ = this.http
-      .get<any[]>(`${this.baseUrl}/groups`, { headers: this.h() })
-      .pipe(catchError(() => of([])));
-
-    forkJoin({ adminGroups: adminGroups$, myGroups: myGroups$ })
-      .pipe(finalize(() => { this.groupsLoading = false; this.cd.detectChanges(); }))
-      .subscribe(({ adminGroups, myGroups }) => {
-
-        if (adminGroups && (adminGroups as AdminGroup[]).length > 0){
-          this.groups = adminGroups as AdminGroup[];
-        } else {
-          // Fallback : enrichir ownerId → username depuis this.users
-          this.groups = (myGroups as any[]).map((g: any) => {
-            const owner = this.users.find(u => u.id === g.ownerId);
-            return {
-              id:            g.id   || '',
-              name:          g.name || '',
-              ownerUsername: owner ? owner.username : (g.ownerId ? g.ownerId.slice(0, 8) + '…' : '—'),
-              ownerEmail:    owner ? owner.email    : '—',
-              memberCount:   Array.isArray(g.memberIds) ? g.memberIds.length : 0,
-              createdAt:     g.createdAt || '',
-            status: 'INACTIVE' as const,          // inconnu sans lastMessage
-            } as AdminGroup;
-          });
-        }
-
-        this.filteredGroups = [...this.groups];
-      });
-  }
+  this.http
+    .get<AdminGroup[]>(`${this.baseUrl}/admin/groups`, { headers: this.h() })
+    .pipe(
+      catchError(() => of([] as AdminGroup[])),
+      finalize(() => { this.groupsLoading = false; this.cd.detectChanges(); })
+    )
+    .subscribe(groups => {
+      this.groups = groups;
+      this.filteredGroups = [...this.groups];
+    });
+}
 
   applyGroupFilter(): void {
   const q = this.groupSearchQuery.trim().toLowerCase();

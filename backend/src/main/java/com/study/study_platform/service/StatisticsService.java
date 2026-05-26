@@ -383,6 +383,47 @@ public class StatisticsService {
 
         }).toList();
     }
+
+    // SUBJECTS GLOBAL POPULARITY — admin view
+    public List<Map<String, Object>> getAdminSubjectsStats() {
+
+        List<Subject> allSubjects = subjectRepository.findAll();
+        List<StudySession> allSessions = sessionRepository.findAll();
+
+        // Agréger heures DONE par subjectId
+        Map<String, Long> hoursPerSubject = allSessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.DONE)
+                .filter(s -> s.getSubjectId() != null)        // ← défensif : évite le NullPointerException
+                .collect(Collectors.groupingBy(
+                        StudySession::getSubjectId,
+                        Collectors.summingLong(this::hoursOf)
+                ));
+
+        // Compter sessions par subjectId
+        Map<String, Long> sessionsPerSubject = allSessions.stream()
+                .filter(s -> s.getSubjectId() != null)
+                .collect(Collectors.groupingBy(
+                        StudySession::getSubjectId,
+                        Collectors.counting()
+                ));
+
+        return allSubjects.stream()
+                .map(subject -> {
+                    long hours    = hoursPerSubject.getOrDefault(subject.getId(), 0L);
+                    long sessions = sessionsPerSubject.getOrDefault(subject.getId(), 0L);
+
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("subject",       subject.getName());   // ← clé attendue par Angular
+                    map.put("totalHours",    hours);
+                    map.put("totalSessions", sessions);
+                    return map;
+                })
+                .filter(m -> (Long) m.get("totalHours") > 0)      // ← ne renvoyer que les matières actives
+                .sorted(Comparator.comparingLong(
+                        (Map<String, Object> m) -> (Long) m.get("totalHours")).reversed()
+                )
+                .toList();
+    }
 //SUBJECTS GLOBAL POPULARITY
 public List<SubjectStatsDTO> getSubjectStats(String username) {
 

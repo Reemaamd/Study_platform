@@ -32,6 +32,18 @@ export const routes: Routes = [
       .then(m => m.PlanningComponent)
   },
   {
+  path: 'weekly-onboarding',
+  loadComponent: () =>
+    import('./pages/weekly-onboarding/weekly-onboarding.component')
+      .then(m => m.WeeklyOnboardingComponent),
+},
+{
+  path: 'notifications',
+  loadComponent: () =>
+    import('./pages/notifications/notifications.component')
+      .then(m => m.NotificationsComponent),
+},
+  {
   path: 'admin',
   loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
 },
