@@ -71,4 +71,17 @@ public class NotificationService {
 
         return repository.findByUserIdAndIsReadFalse(user.getId()).size();
     }
+
+    public void markAllAsRead(String username) {
+
+        Utilisateur user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Notification> notifs =
+                repository.findByUserIdAndIsReadFalse(user.getId());
+
+        notifs.forEach(n -> n.setRead(true));
+
+        repository.saveAll(notifs);
+    }
 }

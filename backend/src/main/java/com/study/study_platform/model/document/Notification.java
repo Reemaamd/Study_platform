@@ -1,5 +1,6 @@
 package com.study.study_platform.model.document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,9 +20,8 @@ public class Notification {
 
     private String message;
     private String type;
-
+    @JsonProperty("isRead")
     private boolean isRead;
-
     private Date createdAt;
     private String externalId;
 }

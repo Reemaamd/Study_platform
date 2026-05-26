@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth.component';
   standalone: true,
   imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
   username = '';
@@ -18,32 +18,40 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
-  onLogin() {
-    const data = {
-      username: this.username,
-      password: this.password
-    };
-
-    this.authService.login(data).subscribe({
+  onLogin(): void {
+    this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: (response: any) => {
-        console.log(response);
         localStorage.setItem('token', response.token);
         localStorage.setItem('role', response.role);
         localStorage.setItem('username', response.username);
 
         if (response.role === 'ADMIN') {
           this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/dashboard']);
+          return;
         }
+        this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
-        console.log(err);
-        this.errorMessage = err.error?.error || 'Erreur de connexion';
-      }
+        console.error(err);
+        this.errorMessage = err?.error?.error || 'Erreur de connexion';
+      },
     });
+  }
+
+  private getCurrentWeekKeyFromLogin(): string {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    return monday.toISOString().slice(0, 10);
+  }
+
+  private getCurrentMondayKey(): string {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    return monday.toISOString().slice(0, 10);
   }
 }
