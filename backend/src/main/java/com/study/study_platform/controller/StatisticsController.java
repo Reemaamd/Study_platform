@@ -85,11 +85,11 @@ public class StatisticsController {
     public List<Map<String, Object>> usersStats() {
         return service.getUsersStats();
     }
-    /*@GetMapping("/admin/subjects-stats")
+    @GetMapping("/admin/subjects-stats")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<Map<String, Object>> subjectsStats() {
-        return service.getSubjectsStats();
-    }*/
+    public List<Map<String, Object>> adminSubjectsStats() {
+        return service.getAdminSubjectsStats();
+    }
     @GetMapping("/admin/weekly-trend")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Map<String, Object>> weeklyTrend() {

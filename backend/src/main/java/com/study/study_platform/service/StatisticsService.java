@@ -42,7 +42,6 @@ public class StatisticsService {
         return Duration.between(s.getStartTime(), s.getEndTime()).toHours();
     }
 
-    // ✅ Semaine courante lundi→dimanche
     private LocalDate currentMonday() {
         return LocalDate.now().with(WeekFields.ISO.dayOfWeek(), 1);
     }
@@ -51,7 +50,6 @@ public class StatisticsService {
         return LocalDate.now().with(WeekFields.ISO.dayOfWeek(), 7);
     }
 
-    // ✅ Filtre sessions dans la semaine courante
     private List<StudySession> filterCurrentWeek(List<StudySession> sessions) {
         LocalDate start = currentMonday();
         LocalDate end   = currentSunday();
@@ -64,7 +62,6 @@ public class StatisticsService {
                 .toList();
     }
 
-    // ✅ Filtre objectifs dans la semaine courante
     private List<Objective> filterCurrentWeekObjectives(List<Objective> objectives) {
         LocalDate start = currentMonday();
         LocalDate end   = currentSunday();
@@ -82,12 +79,10 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement les sessions de cette semaine
         List<StudySession> sessions = filterCurrentWeek(
                 sessionRepository.findByUserId(userId)
         );
 
-        // ✅ Seulement les objectifs de cette semaine
         List<Objective> objectives = filterCurrentWeekObjectives(
                 objectiveRepository.findByUserId(userId)
         );
@@ -129,7 +124,6 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement cette semaine
         List<StudySession> sessions = filterCurrentWeek(
                 sessionRepository.findByUserId(userId)
         );
@@ -154,7 +148,6 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement cette semaine
         List<StudySession> sessions = filterCurrentWeek(
                 sessionRepository.findByUserId(userId)
         );
@@ -184,7 +177,6 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement cette semaine
         List<StudySession> sessions = filterCurrentWeek(
                 sessionRepository.findByUserId(userId)
         );
@@ -213,14 +205,13 @@ public class StatisticsService {
     }
 
     // ─────────────────────────────────────────
-    // 5. SUBJECT STATS — semaine courante
+    // 5. SUBJECT STATS — semaine courante (utilisateur connecté)
     // ─────────────────────────────────────────
     public List<SubjectStatsDTO> getSubjectStats(String username) {
 
         Utilisateur user = getUser(username);
         List<Subject> subjects = subjectRepository.findByUserId(user.getId());
 
-        // ✅ Seulement les sessions de cette semaine
         List<StudySession> sessions = filterCurrentWeek(
                 sessionRepository.findByUserId(user.getId())
         );
@@ -263,7 +254,6 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement cette semaine
         Map<String, Long> map = filterCurrentWeek(
                 sessionRepository.findByUserId(userId)
         ).stream()
@@ -290,7 +280,6 @@ public class StatisticsService {
 
         String userId = getUser(username).getId();
 
-        // ✅ Seulement les objectifs de cette semaine
         List<Objective> objectives = filterCurrentWeekObjectives(
                 objectiveRepository.findByUserId(userId)
         );
@@ -306,7 +295,7 @@ public class StatisticsService {
     }
 
     // ─────────────────────────────────────────
-    // 8. CURRENT WEEK — inchangé
+    // 8. CURRENT WEEK
     // ─────────────────────────────────────────
     public CurrentWeekStatsDTO getCurrentWeek(String username) {
 
@@ -335,7 +324,7 @@ public class StatisticsService {
     }
 
     // ─────────────────────────────────────────
-    // TODAY SESSIONS — inchangé
+    // TODAY SESSIONS
     // ─────────────────────────────────────────
     public List<TodaySessionDTO> getTodaySessions(String username) {
 
@@ -368,7 +357,7 @@ public class StatisticsService {
     }
 
     // ─────────────────────────────────────────
-    // ADMIN — inchangés
+    // ADMIN
     // ─────────────────────────────────────────
     public Map<String, Object> getAdminDashboard() {
         List<Utilisateur> users = userRepository.findAll().stream()
@@ -422,6 +411,45 @@ public class StatisticsService {
             map.put("studyHours", hours);
             return map;
         }).toList();
+    }
+
+    // SUBJECTS GLOBAL POPULARITY — admin view
+    public List<Map<String, Object>> getAdminSubjectsStats() {
+
+        List<Subject> allSubjects = subjectRepository.findAll();
+        List<StudySession> allSessions = sessionRepository.findAll();
+
+        Map<String, Long> hoursPerSubject = allSessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.DONE)
+                .filter(s -> s.getSubjectId() != null)
+                .collect(Collectors.groupingBy(
+                        StudySession::getSubjectId,
+                        Collectors.summingLong(this::hoursOf)
+                ));
+
+        Map<String, Long> sessionsPerSubject = allSessions.stream()
+                .filter(s -> s.getSubjectId() != null)
+                .collect(Collectors.groupingBy(
+                        StudySession::getSubjectId,
+                        Collectors.counting()
+                ));
+
+        return allSubjects.stream()
+                .map(subject -> {
+                    long hours    = hoursPerSubject.getOrDefault(subject.getId(), 0L);
+                    long sessions = sessionsPerSubject.getOrDefault(subject.getId(), 0L);
+
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("subject",       subject.getName());
+                    map.put("totalHours",    hours);
+                    map.put("totalSessions", sessions);
+                    return map;
+                })
+                .filter(m -> (Long) m.get("totalHours") > 0)
+                .sorted(Comparator.comparingLong(
+                        (Map<String, Object> m) -> (Long) m.get("totalHours")).reversed()
+                )
+                .toList();
     }
 
     public List<Map<String, Object>> getWeeklyTrend() {
