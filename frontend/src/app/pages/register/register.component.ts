@@ -18,7 +18,6 @@ export class RegisterComponent {
   username = '';
   email = '';
   password = '';
-  role = '';
 
   successMessage = '';
   errorMessage = '';
@@ -35,7 +34,7 @@ export class RegisterComponent {
       username: this.username,
       email: this.email,
       password: this.password,
-      role: this.role
+      role: 'USER'
     };
 
     console.log(data);

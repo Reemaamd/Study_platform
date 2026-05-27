@@ -1,6 +1,6 @@
 package com.study.study_platform.model.embedded;
 
-import com.study.study_platform.model.enums.DayOfWeek;
+import java.time.DayOfWeek;
 import lombok.*;
 
 import java.time.LocalTime;

@@ -59,6 +59,14 @@ nav.nav {
 .btn-outline { background: rgba(255,255,255,.72); border-color: rgba(14,26,43,.14); color: var(--dark); }
 .btn-outline:hover { border-color: rgba(14,26,43,.32); }
 
+.btn-profile {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid rgba(14,26,43,.18);
+  background: transparent; color: var(--dark); font-size: 1.2rem; cursor: pointer;
+  transition: transform var(--transition), background-color var(--transition), border-color var(--transition);
+}
+.btn-profile:hover { transform: translateY(-1px); background: var(--dark); color: #fff; border-color: var(--dark); }
+
 .btn-apply {
   background: transparent; border: 0; padding: 0; cursor: pointer;
   color: var(--dark); font: 600 .85rem var(--font-sans); text-decoration: underline; text-underline-offset: .22em;

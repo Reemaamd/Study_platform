@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-landing',
@@ -9,7 +9,19 @@ import { RouterLink } from '@angular/router';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css']
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
+  isLoggedIn = false;
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    const token = localStorage.getItem('token');
+    this.isLoggedIn = !!token;
+  }
+
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
+  }
   sessions = [
     { time: '08:00 - 09:30', title: 'Mathématiques', sub: 'Algèbre linéaire', color: 'blue' },
     { time: '10:00 - 11:30', title: 'Physique', sub: 'Mécanique quantique', color: 'purple' },

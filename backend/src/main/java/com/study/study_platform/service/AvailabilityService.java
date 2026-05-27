@@ -3,7 +3,7 @@ package com.study.study_platform.service;
 import com.study.study_platform.dto.AvailabilityDTO;
 import com.study.study_platform.model.document.Utilisateur;
 import com.study.study_platform.model.embedded.Availability;
-import com.study.study_platform.model.enums.DayOfWeek;
+import java.time.DayOfWeek;
 import com.study.study_platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

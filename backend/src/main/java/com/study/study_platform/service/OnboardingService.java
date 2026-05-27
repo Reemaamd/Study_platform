@@ -6,7 +6,7 @@ import com.study.study_platform.model.document.Objective;
 import com.study.study_platform.model.document.Subject;
 import com.study.study_platform.model.document.Utilisateur;
 import com.study.study_platform.model.embedded.Availability;
-import com.study.study_platform.model.enums.DayOfWeek;
+import java.time.DayOfWeek;
 import com.study.study_platform.repository.ObjectiveRepository;
 import com.study.study_platform.repository.SubjectRepository;
 import com.study.study_platform.repository.UserRepository;

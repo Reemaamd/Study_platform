@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NotificationService, AppNotification } from '../../services/notification.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { BottomNavComponent } from '../../components/bottom-bar/bottom-bar.component';
 
 interface NotificationGroup {
   label: string;
@@ -12,7 +13,7 @@ interface NotificationGroup {
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BottomNavComponent],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.css'],
 })
