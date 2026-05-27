@@ -27,7 +27,6 @@ export class LoginComponent {
         localStorage.setItem('token', response.token);
         localStorage.setItem('role', response.role);
         localStorage.setItem('username', response.username);
-
         if (response.role === 'ADMIN') {
           this.router.navigate(['/admin']);
           return;
@@ -39,19 +38,5 @@ export class LoginComponent {
         this.errorMessage = err?.error?.error || 'Erreur de connexion';
       },
     });
-  }
-
-  private getCurrentWeekKeyFromLogin(): string {
-    const now = new Date();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    return monday.toISOString().slice(0, 10);
-  }
-
-  private getCurrentMondayKey(): string {
-    const now = new Date();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    return monday.toISOString().slice(0, 10);
   }
 }

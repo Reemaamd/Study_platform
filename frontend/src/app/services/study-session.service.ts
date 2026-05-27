@@ -45,6 +45,25 @@ export class StudySessionService {
     );
   }
 
+  /**
+   * GET /study-sessions?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+   * Récupère les sessions d'une semaine spécifique (filtrées par le backend)
+   * Params: startDate, endDate au format YYYY-MM-DD
+   */
+  getByDateRange(startDate: string, endDate: string): Observable<StudySessionDTO[]> {
+    let url = this.base;
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    return this.http.get<StudySessionDTO[]>(url).pipe(
+      tap(sessions => this._sessions$.next(sessions)),
+      catchError(this.handleError),
+    );
+  }
+
   // ── GENERATE ────────────────────────────────────────────────
 
   /**
@@ -120,8 +139,19 @@ export class StudySessionService {
       message = 'Accès refusé.';
     } else if (err.status === 400 && err.error?.message === 'No availability defined') {
       message = '⚠️ Aucune disponibilité définie. Veuillez configurer vos disponibilités dans les paramètres.';
+    } else if (err.status === 400) {
+      const serverMsg = err.error?.message || 
+                       err.error?.error || 
+                       err.statusText || 
+                       'Requête invalide';
+      message = `Erreur (400): ${serverMsg}`;
     } else {
-      message = `Erreur serveur (${err.status}) : ${err.error?.message ?? err.message}`;
+      const serverMsg = err.error?.message || 
+                       err.error?.error || 
+                       err.statusText || 
+                       err.message ||
+                       'Erreur inconnue';
+      message = `Erreur serveur (${err.status}) : ${serverMsg}`;
     }
 
     return throwError(() => new Error(message));

@@ -22,6 +22,7 @@ import java.util.List;
 public class StudySessionController {
 
     private final StudySessionService service;
+    private final UserRepository userRepository;
 
 
     @PostMapping("/generate")
@@ -34,26 +35,21 @@ public class StudySessionController {
     @PutMapping("/{id}/complete")
     public StudySession completeSession(
             @PathVariable String id,
-            Authentication authentication
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
+        // ✅ Récupérer l'ID réel depuis le username
+        Utilisateur user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String username = authentication.getName();
-
-        return service.completeSession(id, username);
+        return service.completeSession(id, user.getId()); // ✅ passer l'ID, pas le username
     }
 
     @GetMapping
     public List<StudySessionDTO> getUserSessions(
-            @AuthenticationPrincipal UserDetails u
-    ) {
+            @AuthenticationPrincipal UserDetails u,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
 
-        return service
-                .getUserSessionsThisWeek(
-                        u.getUsername()
-                );
+        return service.getUserSessions(u.getUsername(), startDate, endDate);
     }
 }
