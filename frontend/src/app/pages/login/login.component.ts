@@ -32,9 +32,7 @@ export class LoginComponent {
   };
 
   this.authService.login(data).subscribe({
-
     next: (response: any) => {
-
       console.log(response);
 
       // sauvegarder JWT
@@ -44,26 +42,16 @@ export class LoginComponent {
       localStorage.setItem('role', response.role);
       localStorage.setItem('username', response.username);
 
-        // redirection
-        this.router.navigate(['/dashboard']);
-      },
       // redirection selon role
-      if(response.role === 'ADMIN'){
-
+      if (response.role === 'ADMIN') {
         this.router.navigate(['/admin']);
-
-      }else{
-
+      } else {
         this.router.navigate(['/dashboard']);
       }
     },
-
     error: (err) => {
-
       console.log(err);
-
-      this.errorMessage =
-        err.error.error || 'Erreur de connexion';
+      this.errorMessage = err.error.error || 'Erreur de connexion';
     }
   });
 }

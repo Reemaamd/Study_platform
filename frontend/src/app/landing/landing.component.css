@@ -112,7 +112,7 @@ nav.nav {
 }
 .hero-stats strong { color: var(--dark); font-family: var(--font-serif); font-size: 2rem; font-weight: 700; }
 
-.hero-card-wrapper { flex: 1; position: relative; max-width: 36rem; animation-delay: .12s; }
+.hero-card-wrapper { flex: 1; position: relative; max-width: 45rem; animation-delay: .12s; }
 
 .streak-badge {
   position: absolute; top: -1.25rem; right: -1rem; z-index: 10;
@@ -124,7 +124,9 @@ nav.nav {
 
 .planning-card, .feature-card, .cta-banner { border: 1px solid var(--surface-border); }
 .planning-card {
-  overflow: hidden; border-radius: 1.25rem; background: rgba(255,255,255,.86); box-shadow: 0 1rem 3rem rgba(14,26,43,.12);
+  overflow: hidden; border-radius: 1.25rem; background: rgba(255,255,255,.86); 
+  box-shadow: 0 1.5rem 4rem rgba(61,154,110,.25), 0 1rem 3rem rgba(14,26,43,.12);
+  min-height: 35rem;
 }
 .card-header, .card-ai-row {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem;

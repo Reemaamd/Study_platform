@@ -21,7 +21,7 @@ export class LandingComponent {
     {
       num: 1,
       tag: 'Planifier',
-      icon: '📅',
+      icon: '',
       title: 'Votre semaine en un coup dœil',
       desc: 'Visualisez toutes vos sessions sur un planning élégant.',
       color: 'blue'
@@ -29,7 +29,7 @@ export class LandingComponent {
     {
       num: 2,
       tag: 'Étudier',
-      icon: '📚',
+      icon: '',
       title: 'Bloquez le temps, pas la créativité',
       desc: 'Des sessions structurées sans prescription rigide.',
       color: 'green'
@@ -37,7 +37,7 @@ export class LandingComponent {
     {
       num: 3,
       tag: 'Progresser',
-      icon: '📊',
+      icon: '',
       title: 'Voyez vos progrès s’accumuler',
       desc: 'Chaque session crée un effet de boule de neige.',
       color: 'purple'
@@ -45,7 +45,7 @@ export class LandingComponent {
     {
       num: 4,
       tag: 'Cercles',
-      icon: '👥',
+      icon: '',
       title: 'Étudier n’est jamais seul',
       desc: 'Rejoignez des cercles d’étude curatés.',
       color: 'orange',
@@ -54,7 +54,7 @@ export class LandingComponent {
     {
       num: 5,
       tag: 'Bonus',
-      icon: '⚡',
+      icon: '',
       title: 'L’IA qui orchestre votre semaine',
       desc: 'Des suggestions douces, jamais des ordres.',
       color: 'red'

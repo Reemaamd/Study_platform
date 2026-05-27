@@ -18,24 +18,40 @@ export class StatisticsService {
     return this.http.get<any>(`${this.statsUrl}/dashboard`);
   }
 
-  getStudyTime(): Observable<any> {
-    return this.http.get<any>(`${this.statsUrl}/study-time`);
+  getStudyTime(startDate?: string, endDate?: string): Observable<any> {
+    let url = `${this.statsUrl}/study-time`;
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    return this.http.get<any>(url);
   }
 
   getProgress(): Observable<any> {
     return this.http.get<any>(`${this.statsUrl}/progress`);
   }
 
-  getWeeklyProductivity(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.statsUrl}/weekly-productivity`);
+  getWeeklyProductivity(startDate?: string, endDate?: string): Observable<any[]> {
+    let url = `${this.statsUrl}/weekly-productivity`;
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
-  getSubjectsStats(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.statsUrl}/subjects-stats`);
+  getSubjectsStats(startDate?: string, endDate?: string): Observable<any[]> {
+    let url = `${this.statsUrl}/subjects-stats`;
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
-  getDailyHours(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.statsUrl}/daily-hours`);
+  getDailyHours(startDate?: string, endDate?: string): Observable<any[]> {
+    let url = `${this.statsUrl}/daily-hours`;
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
   // Fetch today's sessions for the current user
@@ -69,8 +85,8 @@ getTodaySessions(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/weekly-trend`);
   }
 
-  getStreak(): Observable<any[]>{
-  return this.http.get<any>(`${this.statsUrl}/streak`);
-}
+  getStreak(): Observable<any> {
+    return this.http.get<any>(`${this.statsUrl}/streak`);
+  }
 
 }

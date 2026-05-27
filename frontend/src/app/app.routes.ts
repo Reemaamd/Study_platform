@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 // Use lazy-loaded standalone components to avoid direct imports that may fail
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { SettingsComponent } from './pages/user-settings/settings.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -35,6 +37,7 @@ export const routes: Routes = [
   path: 'admin',
   loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
 },
+ { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   {
     path: '**',
     redirectTo: '',

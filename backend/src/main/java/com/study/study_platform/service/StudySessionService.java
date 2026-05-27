@@ -248,7 +248,10 @@ public class StudySessionService {
         Objective obj = objectiveRepository.findByUserId(session.getUserId())
                 .stream()
                 .filter(o ->
-                        o.getSubjectId().equals(session.getSubjectId()) &&
+                        o.getSubjectId() != null && // ✅ évite le NullPointerException
+                                o.getWeekStartDate() != null && // ✅ sécuriser aussi les dates
+                                o.getWeekEndDate() != null &&
+                                o.getSubjectId().equals(session.getSubjectId()) &&
                                 !sessionDate.isBefore(o.getWeekStartDate()) &&
                                 !sessionDate.isAfter(o.getWeekEndDate())
                 )
@@ -310,49 +313,34 @@ public class StudySessionService {
         return streak;
     }
 
-    public List<StudySessionDTO> getUserSessionsThisWeek(String username) {
+    public List<StudySessionDTO> getUserSessions(String username, String startDate, String endDate) {
 
         Utilisateur user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDate today = LocalDate.now();
+        // ✅ Utilise les dates du frontend, sinon semaine courante par défaut
+        LocalDateTime weekStart = startDate != null
+                ? LocalDate.parse(startDate).atStartOfDay()
+                : LocalDate.now().with(java.time.DayOfWeek.MONDAY).atStartOfDay();
 
-        LocalDateTime weekStart = today
-                .with(java.time.DayOfWeek.MONDAY)
-                .atStartOfDay();
+        LocalDateTime weekEnd = endDate != null
+                ? LocalDate.parse(endDate).atTime(23, 59, 59)
+                : LocalDate.now().with(java.time.DayOfWeek.SUNDAY).atTime(23, 59, 59);
 
-        LocalDateTime weekEnd = today
-                .with(java.time.DayOfWeek.SUNDAY)
-                .atTime(23, 59, 59);
+        List<StudySession> sessions = repository.findByUserIdAndStartTimeBetween(
+                user.getId(), weekStart, weekEnd
+        );
 
-        List<StudySession> sessions =
-                repository.findByUserIdAndStartTimeBetween(
-                        user.getId(),
-                        weekStart,
-                        weekEnd
-                );
-
-        return sessions.stream()
-                .map(session -> {
-
-                    Subject subject = subjectRepository
-                            .findById(session.getSubjectId())
-                            .orElse(null);
-
-                    return StudySessionDTO.builder()
-                            .id(session.getId())
-                            .subjectId(session.getSubjectId())
-                            .subjectName(
-                                    subject != null
-                                            ? subject.getName()
-                                            : "Unknown"
-                            )
-                            .startTime(session.getStartTime())
-                            .endTime(session.getEndTime())
-                            .status(session.getStatus())
-                            .build();
-                })
-                .toList();
+        return sessions.stream().map(session -> {
+            Subject subject = subjectRepository.findById(session.getSubjectId()).orElse(null);
+            return StudySessionDTO.builder()
+                    .id(session.getId())
+                    .subjectId(session.getSubjectId())
+                    .subjectName(subject != null ? subject.getName() : "Unknown")
+                    .startTime(session.getStartTime())
+                    .endTime(session.getEndTime())
+                    .status(session.getStatus())
+                    .build();
+        }).toList();
     }
 }
