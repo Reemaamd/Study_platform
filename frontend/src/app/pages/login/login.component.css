@@ -44,6 +44,27 @@
   background: radial-gradient(circle, rgba(61,154,110,.22), transparent 65%);
   pointer-events: none;
 }
+.brand-image-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.brand-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1; /* ou retire cette ligne */
+  /* supprime mix-blend-mode: luminosity; */
+}
+
+/* S'assurer que logo et texte restent au-dessus */
+.brand-logo,
+.brand-bottom {
+  position: relative;
+  z-index: 1;
+}
 
 .brand-logo {
   position: relative;
@@ -59,10 +80,11 @@
   font: 700 clamp(2rem, 3.5vw, 3rem)/1.08 var(--font-serif);
   font-style: normal;
   quotes: none;
+  color: #000;
 }
 
 .brand-tag {
-  color: rgba(255,255,255,.42);
+  color: rgb(0, 0, 0);
   font: 600 .68rem var(--font-sans);
   letter-spacing: .14em;
   text-transform: uppercase;
