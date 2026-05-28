@@ -16,6 +16,7 @@ public class MessageResponseDTO {
     private String id;
     private String groupId;
     private String senderId;
+    private String senderUsername;
     private String content;
     private LocalDateTime createdAt;
 }

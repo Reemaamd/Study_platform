@@ -53,13 +53,18 @@ public class GroupService {
         return groupMapper.toResponseDTO(savedGroup);
     }
 
-    public List<Group> getMyGroups(String username) {
+    public List<GroupResponseDTO> getMyGroups(String username) {
 
         Utilisateur user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return groupRepository.findByMemberIdsContaining(user.getId());
+        return groupRepository
+                .findByMemberIdsContaining(user.getId())
+                .stream()
+                .map(groupMapper::toResponseDTO)
+                .toList();
     }
+
 
     public Group getGroupDetails(String groupId) {
 

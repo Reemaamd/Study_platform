@@ -32,7 +32,7 @@ public class InvitationController {
 
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public List<Invitation> getMyInvitations(
+    public List<InvitationResponseDTO> getMyInvitations(
             Authentication authentication
     ) {
 

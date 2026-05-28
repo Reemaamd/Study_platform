@@ -16,7 +16,9 @@ public class GroupResponseDTO {
 
     private String ownerId;
 
-    private List<String> memberIds;
+    private String ownerUsername;
+
+    private List<MemberDTO> members;
 
     private LocalDateTime createdAt;
 }

@@ -1,0 +1,425 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+/* ── Host ──────────────────────────────────────────────── */
+:host {
+  display: block;
+  background: #f5f0e8;
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Conteneur ─────────────────────────────────────────── */
+.analyse-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 44px 24px 120px;
+}
+
+/* ── États loading / erreur ────────────────────────────── */
+.state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 14px;
+}
+
+.state-txt  { font-size: 14px; color: #aaa; margin: 0; }
+.error-txt  { color: #c0392b !important; }
+.state-icon { font-size: 2rem; }
+
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid #ddd;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Animations d'entrée ───────────────────────────────── */
+.page-header  { animation: haut .5s ease both; }
+.kpi-grid     { animation: haut .5s .07s ease both; }
+.rangee-milieu{ animation: haut .5s .14s ease both; }
+.card-sessions{ animation: haut .5s .21s ease both; }
+.rangee-bas   { animation: haut .5s .28s ease both; }
+
+@keyframes haut {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── En-tête ───────────────────────────────────────────── */
+.page-header { margin-bottom: 28px; }
+
+.eyebrow {
+  display: block;
+  font-size: 10px;
+  letter-spacing: .14em;
+  color: #aaa;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.page-header h1 em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── Grille KPI ────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.kpi {
+  border-radius: 16px;
+  padding: 18px 18px 20px;
+}
+
+.kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.kpi-label {
+  font-size: 10px;
+  letter-spacing: .1em;
+  font-weight: 600;
+  color: rgba(0,0,0,.42);
+  text-transform: uppercase;
+}
+
+.kpi-ico { font-size: 15px; color: rgba(0,0,0,.28); }
+
+.kpi-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kpi--vert  { background: #c8e6c9; }
+.kpi--ambre { background: #ffe0b2; }
+.kpi--bleu  { background: #b3d9ee; }
+.kpi--rose  { background: #f8d7d7; }
+
+/* ── Carte de base ─────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 22px 24px;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.card-titre {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.card-badge {
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: #bbb;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.vide {
+  color: #ccc;
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
+  margin: 0;
+}
+
+/* ── Rangée milieu ─────────────────────────────────────── */
+.rangee-milieu {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* ── Graphique barres ──────────────────────────────────── */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 155px;
+  padding-top: 8px;
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 5px;
+}
+
+.bar-lbl-haut {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  height: 16px;
+  line-height: 16px;
+}
+
+.bar-piste {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.bar-remplissage {
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 4px 4px 0 0;
+  min-height: 3px;
+  transition: height .7s cubic-bezier(.4,0,.2,1);
+}
+
+.bar-lbl-bas {
+  font-size: 10px;
+  color: #bbb;
+  font-weight: 500;
+}
+
+/* ── Répartition matières ──────────────────────────────── */
+.liste-matieres {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.matiere-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.matiere-nom { font-size: 13px; font-weight: 500; color: #2d2d2d; }
+.matiere-pct { font-size: 12px; color: #888; font-weight: 500; }
+
+/* ── Barre de progression (partagée) ───────────────────── */
+.piste-prog {
+  width: 100%;
+  height: 7px;
+  background: #ece9e2;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.remplissage-prog {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .9s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Sessions récentes ─────────────────────────────────── */
+.card-sessions { margin-bottom: 14px; }
+
+.legende-sessions {
+  display: flex;
+  gap: 24px;
+}
+
+.legende-sessions span {
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: #ccc;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.sess-ligne {
+
+  display: grid;
+
+  grid-template-columns:
+    80px
+    140px
+    120px
+    140px
+    120px;
+
+  align-items: center;
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid #f4f1eb;
+
+  gap: 12px;
+}
+.sess-ligne:last-child { border-bottom: none; }
+
+.sess-annee  { font-size: 10px; color: #bbb; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.sess-nom    { font-size: 14px; font-weight: 500; }
+.sess-prevu,
+.sess-realise,
+.sess-note {
+
+  font-size: 13px;
+
+  color: #1a1a1a;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  text-align: center;
+}
+
+/* ── Rangée basse ──────────────────────────────────────── */
+.rangee-bas {
+  display: grid;
+  grid-template-columns: 1fr 200px 1fr;
+  gap: 14px;
+}
+
+/* ── Semaine courante ──────────────────────────────────── */
+.semaine-kpis {
+  display: flex;
+  align-items: center;
+}
+
+.sem-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+}
+
+.sem-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.sem-lbl {
+  font-size: 10px;
+  color: #aaa;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  text-align: center;
+}
+
+.sep-v {
+  width: 1px;
+  height: 34px;
+  background: #ece9e2;
+  flex-shrink: 0;
+}
+
+/* ── Donut ─────────────────────────────────────────────── */
+.card-donut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.donut-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 4px auto 10px;
+}
+
+.donut-svg { width: 100%; height: 100%; }
+
+.donut-svg circle:last-child {
+  transition: stroke-dasharray 1.1s cubic-bezier(.4,0,.2,1);
+}
+
+.donut-centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-pct {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.donut-sub { font-size: 10px; color: #aaa; font-weight: 500; }
+
+.donut-detail {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Progression ───────────────────────────────────────── */
+.prog-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prog-item { display: flex; flex-direction: column; gap: 6px; }
+
+.prog-entete {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #555;
+}
+
+.prog-entete span:last-child { font-weight: 600; color: #1a1a1a; }
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .rangee-bas {
+    grid-template-columns: 1fr 1fr;
+  }
+  .rangee-bas .card:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .kpi-grid       { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rangee-milieu  { grid-template-columns: 1fr; }
+  .rangee-bas     { grid-template-columns: 1fr; }
+  .kpi-val        { font-size: 1.8rem; }
+  .sess-ligne     { grid-template-columns: 56px 1fr 60px 70px; }
+  .sess-note      { display: none; }
+}

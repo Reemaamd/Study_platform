@@ -1,0 +1,501 @@
+<div class="analyse-page">
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="state-center">
+    <div class="spinner"></div>
+    <p class="state-txt">Chargement de vos données…</p>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="error && !loading" class="state-center">
+    <span class="state-icon">⚠</span>
+    <p class="state-txt error-txt">
+      Impossible de charger les statistiques.
+    </p>
+  </div>
+
+  <!-- CONTENT -->
+  <ng-container *ngIf="!loading && !error && data">
+
+    <!-- ═════════ HEADER ═════════ -->
+    <header class="page-header">
+
+      <span class="eyebrow">
+        ANALYSE · {{ saison }}
+      </span>
+
+      <h1>
+        Ce que vos heures
+        <em>racontent</em>.
+      </h1>
+
+    </header>
+
+    <!-- ═════════ KPI ═════════ -->
+    <section class="kpi-grid">
+
+      <!-- TOTAL HOURS -->
+      <div class="kpi kpi--vert">
+
+        <div class="kpi-top">
+          <span class="kpi-label">
+            TEMPS TOTAL
+          </span>
+
+          <span class="kpi-ico">◷</span>
+        </div>
+
+        <div class="kpi-val">
+          {{ totalHeures }}
+        </div>
+
+      </div>
+
+      <!-- PRODUCTIVITY -->
+      <div class="kpi kpi--ambre">
+
+        <div class="kpi-top">
+          <span class="kpi-label">
+            PRODUCTIVITÉ
+          </span>
+
+          <span class="kpi-ico">↗</span>
+        </div>
+
+        <div class="kpi-val">
+          {{ productivite }}
+        </div>
+
+      </div>
+
+      <!-- PREVU VS REALISE -->
+      <div class="kpi kpi--bleu">
+
+        <div class="kpi-top">
+          <span class="kpi-label">
+            PRÉVU VS RÉALISÉ
+          </span>
+
+          <span class="kpi-ico">◎</span>
+        </div>
+
+        <div class="kpi-val">
+          {{ prevuVsRealise }}
+        </div>
+
+      </div>
+
+      <!-- SESSIONS -->
+      <div class="kpi kpi--rose">
+
+        <div class="kpi-top">
+          <span class="kpi-label">
+            SESSIONS
+          </span>
+
+          <span class="kpi-ico">◎</span>
+        </div>
+
+        <div class="kpi-val">
+          {{ totalSessions }}
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ═════════ MILIEU ═════════ -->
+    <section class="rangee-milieu">
+
+      <!-- HEURES PAR JOUR -->
+      <div class="card">
+
+        <div class="card-head">
+
+          <span class="card-titre">
+            Heures par jour
+          </span>
+
+          <span class="card-badge">
+            PAR JOUR DE SEMAINE
+          </span>
+
+        </div>
+
+        <div
+          class="bar-chart"
+          *ngIf="data?.dailyHours?.length; else vide1">
+
+          <div
+            class="bar-col"
+            *ngFor="let d of data?.dailyHours">
+
+            <span class="bar-lbl-haut">
+              {{ d.hours > 0 ? d.hours + 'h' : '' }}
+            </span>
+
+            <div class="bar-piste">
+
+              <div
+                class="bar-remplissage"
+                [style.height.px]="barHauteurPx(d.hours)">
+              </div>
+
+            </div>
+
+            <span class="bar-lbl-bas">
+              {{ labelJour(d.day) }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <ng-template #vide1>
+
+          <p class="vide">
+            Aucune session complétée.
+          </p>
+
+        </ng-template>
+
+      </div>
+
+      <!-- SUBJECTS -->
+      <div class="card">
+
+        <div class="card-head">
+
+          <span class="card-titre">
+            Répartition
+          </span>
+
+        </div>
+
+        <div
+          class="liste-matieres"
+          *ngIf="data?.subjectsStats?.length; else vide2">
+
+          <div
+            class="matiere-row"
+            *ngFor="let s of data?.subjectsStats; let i = index">
+
+            <div class="matiere-meta">
+
+              <span class="matiere-nom">
+                {{ s.subjectName }}
+              </span>
+
+              <span class="matiere-pct">
+                {{ pourcentageMatiere(s) }}%
+              </span>
+
+            </div>
+
+            <div class="piste-prog">
+
+              <div
+                class="remplissage-prog"
+                [style.width.%]="pourcentageMatiere(s)"
+                [style.background]="couleurMatiere(i)">
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <ng-template #vide2>
+
+          <p class="vide">
+            Aucune matière.
+          </p>
+
+        </ng-template>
+
+      </div>
+
+    </section>
+
+    <!-- ═════════ SESSIONS ═════════ -->
+    <section class="card card-sessions">
+
+      <div class="card-head">
+
+        <span class="card-titre">
+          Sessions récentes
+        </span>
+
+        <div class="legende-sessions">
+
+          <span>HEURES</span>
+          <span>SESSIONS</span>
+          <span>NIVEAU</span>
+
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="sessionsRecentes?.length; else vide3">
+
+        <div
+          class="sess-ligne"
+          *ngFor="let w of sessionsRecentes">
+
+          <span class="sess-annee">
+            {{ anneeSemaine(w.week) }}
+          </span>
+
+          <span class="sess-nom">
+            {{ numSemaine(w.week) }}
+          </span>
+
+          <span class="sess-prevu">
+            {{ w.hoursStudied }}h
+          </span>
+
+          <span class="sess-realise">
+            {{ w.sessionsCompleted }} sess.
+          </span>
+
+          <span class="sess-note">
+            {{ noteSession(w.achievedObjectives) }}
+          </span>
+
+        </div>
+
+      </div>
+
+      <ng-template #vide3>
+
+        <p class="vide">
+          Pas encore de semaines enregistrées.
+        </p>
+
+      </ng-template>
+
+    </section>
+
+    <!-- ═════════ BAS ═════════ -->
+    <section class="rangee-bas">
+
+      <!-- CURRENT WEEK -->
+      <div class="card">
+
+        <div class="card-head">
+
+          <span class="card-titre">
+            Cette semaine
+          </span>
+
+        </div>
+
+        <div class="semaine-kpis">
+
+          <div class="sem-item">
+
+            <span class="sem-val">
+              {{ data?.currentWeek?.studyHours ?? 0 }}h
+            </span>
+
+            <span class="sem-lbl">
+              étudiées
+            </span>
+
+          </div>
+
+          <div class="sep-v"></div>
+
+          <div class="sem-item">
+
+            <span class="sem-val">
+              {{ data?.currentWeek?.completedSessions ?? 0 }}
+            </span>
+
+            <span class="sem-lbl">
+              sessions
+            </span>
+
+          </div>
+
+          <div class="sep-v"></div>
+
+          <div class="sem-item">
+
+            <span class="sem-val">
+              {{ data?.currentWeek?.achievedObjectives ?? 0 }}
+            </span>
+
+            <span class="sem-lbl">
+              objectifs
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- DONUT -->
+      <div class="card card-donut">
+
+        <div class="card-head">
+
+          <span class="card-titre">
+            Objectifs
+          </span>
+
+        </div>
+
+        <div class="donut-wrap">
+
+          <svg viewBox="0 0 100 100" class="donut-svg">
+
+            <circle
+              cx="50"
+              cy="50"
+              r="36"
+              fill="none"
+              stroke="#ece9e2"
+              stroke-width="9"/>
+
+            <circle
+              cx="50"
+              cy="50"
+              r="36"
+              fill="none"
+              stroke="#1a1a1a"
+              stroke-width="9"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="ringDasharray"
+              stroke-dashoffset="0"
+              transform="rotate(-90 50 50)"/>
+
+          </svg>
+
+          <div class="donut-centre">
+
+            <span class="donut-pct">
+              {{ tauxObjectifs }}%
+            </span>
+
+            <span class="donut-sub">
+              atteints
+            </span>
+
+          </div>
+
+        </div>
+
+        <p class="donut-detail">
+
+          {{ data?.objectiveCompletion?.achievedObjectives ?? 0 }}
+
+          /
+
+          {{ data?.objectiveCompletion?.totalObjectives ?? 0 }}
+
+          objectifs
+
+        </p>
+
+      </div>
+
+      <!-- PROGRESSION -->
+      <div class="card">
+
+        <div class="card-head">
+
+          <span class="card-titre">
+            Progression
+          </span>
+
+        </div>
+
+        <div class="prog-liste">
+
+          <!-- PLANIFIE -->
+          <div class="prog-item">
+
+            <div class="prog-entete">
+
+              <span>Planifiées</span>
+
+              <span>
+                {{ data?.progress?.plannedSessions ?? 0 }}
+              </span>
+
+            </div>
+
+            <div class="piste-prog">
+
+              <div
+                class="remplissage-prog"
+                style="width:100%; background:#ece9e2;">
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- DONE -->
+          <div class="prog-item">
+
+            <div class="prog-entete">
+
+              <span>Complétées</span>
+
+              <span>
+                {{ data?.progress?.doneSessions ?? 0 }}
+              </span>
+
+            </div>
+
+            <div class="piste-prog">
+
+              <div
+                class="remplissage-prog"
+                [style.width.%]="Math.round(data?.progress?.completionRate ?? 0)"
+                style="background:#1a1a1a;">
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- RATE -->
+          <div class="prog-item">
+
+            <div class="prog-entete">
+
+              <span>Taux</span>
+
+              <span>
+                {{ Math.round(data?.progress?.completionRate ?? 0) }}%
+              </span>
+
+            </div>
+
+            <div class="piste-prog">
+
+              <div
+                class="remplissage-prog"
+                [style.width.%]="Math.round(data?.progress?.completionRate ?? 0)"
+                style="background:#4caf7d;">
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

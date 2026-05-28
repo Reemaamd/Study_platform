@@ -31,12 +31,15 @@ public class GroupController {
 
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public List<Group> getMyGroups(Authentication authentication) {
+    public List<GroupResponseDTO> getMyGroups(
+            Authentication authentication
+    ) {
 
         String username = authentication.getName();
 
         return groupService.getMyGroups(username);
     }
+
 
     @GetMapping("/{groupId}")
     @PreAuthorize("hasRole('USER')")

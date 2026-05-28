@@ -50,10 +50,40 @@ public class MessageService {
 
         Message saved = messageRepository.save(message);
 
-        return messageMapper.toDTO(saved);
+        return MessageResponseDTO.builder()
+                .id(saved.getId())
+                .groupId(saved.getGroupId())
+                .senderId(saved.getSenderId())
+                .senderUsername(sender.getUsername())
+                .content(saved.getContent())
+                .createdAt(saved.getCreatedAt())
+                .build();
     }
 
-    public List<Message> getGroupMessages(String groupId) {
-        return messageRepository.findByGroupIdOrderByCreatedAtAsc(groupId);
+    public List<MessageResponseDTO> getGroupMessages(String groupId) {
+
+        List<Message> messages =
+                messageRepository.findByGroupIdOrderByCreatedAtAsc(groupId);
+
+        return messages.stream().map(message -> {
+
+            Utilisateur sender = userRepository
+                    .findById(message.getSenderId())
+                    .orElse(null);
+
+            return MessageResponseDTO.builder()
+                    .id(message.getId())
+                    .groupId(message.getGroupId())
+                    .senderId(message.getSenderId())
+                    .senderUsername(
+                            sender != null
+                                    ? sender.getUsername()
+                                    : "Unknown"
+                    )
+                    .content(message.getContent())
+                    .createdAt(message.getCreatedAt())
+                    .build();
+
+        }).toList();
     }
 }

@@ -71,6 +71,14 @@ public class CollaborativeSessionService {
         List<CommonAvailabilityDTO> result = new ArrayList<>();
 
         Utilisateur firstMember = members.get(0);
+        if (
+                firstMember.getAvailabilities() == null
+                        ||
+                        firstMember.getAvailabilities().isEmpty()
+        ) {
+
+            return new ArrayList<>();
+        }
 
         for (Availability baseAvailability :
                 firstMember.getAvailabilities()) {
@@ -88,6 +96,16 @@ public class CollaborativeSessionService {
             for (int i = 1; i < members.size(); i++) {
 
                 Utilisateur member = members.get(i);
+
+                if (
+                        member.getAvailabilities() == null
+                                ||
+                                member.getAvailabilities().isEmpty()
+                ) {
+
+                    valid = false;
+                    break;
+                }
 
                 Availability matchingAvailability =
                         member.getAvailabilities()
@@ -550,5 +568,99 @@ public class CollaborativeSessionService {
         }
 
         studySessionRepository.delete(session);
+    }
+    public List<StudySession> getGroupSessions(
+            String groupId,
+            String username
+    ) {
+
+        Utilisateur user =
+                userRepository.findByUsername(username)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+        Group group =
+                groupRepository.findById(groupId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Group not found"
+                                )
+                        );
+
+        if (!group.getMemberIds().contains(user.getId())) {
+
+            throw new RuntimeException(
+                    "You are not member of this group"
+            );
+        }
+
+        updateExpiredSessions();
+
+        return studySessionRepository
+                .findByGroupIdOrderByStartTimeAsc(groupId);
+    }
+    public StudySession shareSessionToGroup(
+            String sessionId,
+            String groupId,
+            String username
+    ) {
+
+        Utilisateur user =
+                userRepository.findByUsername(username)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+        StudySession session =
+                studySessionRepository.findById(sessionId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Session not found"
+                                )
+                        );
+
+        Group group =
+                groupRepository.findById(groupId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Group not found"
+                                )
+                        );
+
+        // user doit être propriétaire session
+        if (!session.getUserId().equals(user.getId())) {
+
+            throw new RuntimeException(
+                    "Only owner can share session"
+            );
+        }
+
+        // user doit être membre groupe
+        if (!group.getMemberIds().contains(user.getId())) {
+
+            throw new RuntimeException(
+                    "You are not member of this group"
+            );
+        }
+
+        // partager session
+        session.setGroupId(groupId);
+
+        // si session individuelle
+        // devient visible dans groupe
+        if (session.getType() == SessionType.PERSONAL) {
+
+            session.setParticipantIds(
+                    new ArrayList<>(group.getMemberIds())
+            );
+            session.setType(SessionType.SHARED);
+        }
+
+        return studySessionRepository.save(session);
     }
 }
