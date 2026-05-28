@@ -61,22 +61,6 @@
           />
         </div>
 
-        <div class="field-group">
-          <label class="field-label" for="reg-role">RÔLE</label>
-          <div class="select-wrapper">
-            <select
-              id="reg-role"
-              class="field-input field-input--select"
-              [(ngModel)]="role"
-              name="role"
-            >
-              <option value="USER">USER</option>
-              <option value="ADMIN">ADMIN</option>
-            </select>
-            <span class="select-chevron">↓</span>
-          </div>
-        </div>
-
         <button class="btn-submit" type="submit">
           Commencer <span class="btn-arrow">→</span>
         </button>
@@ -99,12 +83,15 @@
   </div>
 
   <!-- Panneau droit : branding clair -->
-  <div class="auth-panel auth-panel--brand auth-panel--sage">
-    <div class="brand-bottom">
-      <blockquote class="brand-quote brand-quote--dark">
-        Une semaine,<br><em>ré-écrite.</em>
-      </blockquote>
-    </div>
+  <!-- Panneau droit : branding clair -->
+<div class="auth-panel auth-panel--brand auth-panel--sage">
+  
+  <!-- Image au milieu -->
+  <div class="brand-image-wrapper">
+    <img src="images/2.jpeg" alt="Sign Up" class="brand-image" />
   </div>
+
+  
+</div>
 
 </div>

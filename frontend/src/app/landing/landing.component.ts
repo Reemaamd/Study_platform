@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-landing',
@@ -9,7 +9,19 @@ import { RouterLink } from '@angular/router';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css']
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
+  isLoggedIn = false;
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    const token = localStorage.getItem('token');
+    this.isLoggedIn = !!token;
+  }
+
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
+  }
   sessions = [
     { time: '08:00 - 09:30', title: 'Mathématiques', sub: 'Algèbre linéaire', color: 'blue' },
     { time: '10:00 - 11:30', title: 'Physique', sub: 'Mécanique quantique', color: 'purple' },
@@ -21,7 +33,7 @@ export class LandingComponent {
     {
       num: 1,
       tag: 'Planifier',
-      icon: '📅',
+      icon: '',
       title: 'Votre semaine en un coup dœil',
       desc: 'Visualisez toutes vos sessions sur un planning élégant.',
       color: 'blue'
@@ -29,7 +41,7 @@ export class LandingComponent {
     {
       num: 2,
       tag: 'Étudier',
-      icon: '📚',
+      icon: '',
       title: 'Bloquez le temps, pas la créativité',
       desc: 'Des sessions structurées sans prescription rigide.',
       color: 'green'
@@ -37,7 +49,7 @@ export class LandingComponent {
     {
       num: 3,
       tag: 'Progresser',
-      icon: '📊',
+      icon: '',
       title: 'Voyez vos progrès s’accumuler',
       desc: 'Chaque session crée un effet de boule de neige.',
       color: 'purple'
@@ -45,7 +57,7 @@ export class LandingComponent {
     {
       num: 4,
       tag: 'Cercles',
-      icon: '👥',
+      icon: '',
       title: 'Étudier n’est jamais seul',
       desc: 'Rejoignez des cercles d’étude curatés.',
       color: 'orange',
@@ -54,7 +66,7 @@ export class LandingComponent {
     {
       num: 5,
       tag: 'Bonus',
-      icon: '⚡',
+      icon: '',
       title: 'L’IA qui orchestre votre semaine',
       desc: 'Des suggestions douces, jamais des ordres.',
       color: 'red'

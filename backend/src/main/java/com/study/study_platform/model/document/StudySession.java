@@ -4,6 +4,7 @@ import com.study.study_platform.model.embedded.Comment;
 import com.study.study_platform.model.enums.SessionStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import com.study.study_platform.model.enums.SessionType;
 import java.time.LocalDateTime;

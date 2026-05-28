@@ -6,6 +6,11 @@ import { CommonModule } from '@angular/common';
 
 import { BottomNavComponent } from './shared/bottom-nav/bottom-nav.component';
 
+// ⚠️ NE PAS injecter WeekGuardService ici.
+// La vérification de semaine se fait dans login.component.ts
+// après authentification réussie. Si on le met ici,
+// il se déclenche AVANT le login et redirige en boucle.
+
 @Component({
   selector: 'app-root',
   standalone: true,

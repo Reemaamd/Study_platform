@@ -1,0 +1,359 @@
+/* ── SHELL ─────────────────────────────────────────── */
+.onboarding-shell {
+  min-height: 100vh;
+  background: #F5F0E8;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 3rem 2rem;
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1a1a;
+  max-width: 100%;   /* remplace 900px */
+  margin: 0;          /* supprime auto */
+  width: 100%;
+  box-sizing: border-box;
+}
+/* ── LOGO ──────────────────────────────────────────── */
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 2.5rem;
+}
+
+.dot { color: #4CAF7D; }
+
+/* ── STEPPER ───────────────────────────────────────── */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 4rem;
+}
+
+.step-segment {
+  height: 2px;
+  width: 120px;
+  background: #d8d2c8;
+  border-radius: 2px;
+  transition: background 0.4s ease;
+}
+
+.step-segment.active,
+.step-segment.done {
+  background: #1a1a2e;
+}
+
+.step-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b0a898;
+  font-weight: 500;
+  margin: 0 12px;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+
+.step-label.active {
+  color: #1a1a2e;
+}
+
+/* ── STEP VIEW ─────────────────────────────────────── */
+.step-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.headline em {
+  font-style: italic;
+}
+
+.sub {
+  font-size: 14px;
+  color: #7a7468;
+  font-weight: 300;
+  margin-bottom: 2.5rem;
+}
+
+/* ── CHIPS (STEP 1) ────────────────────────────────── */
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  user-select: none;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #5a5a5a;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.chip-remove:hover { color: #1a1a1a; }
+
+.add-chip {
+  background: transparent;
+  border: 1.5px dashed #c0b8ac;
+  cursor: pointer;
+  color: #7a7468;
+  font-weight: 400;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.add-chip:hover {
+  border-color: #1a1a2e;
+  color: #1a1a2e;
+}
+
+.add-chip.adding {
+  border-style: solid;
+  border-color: #1a1a2e;
+  background: #fff;
+  padding: 8px 14px;
+}
+
+.chip-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1a1a;
+  width: 120px;
+}
+
+.chip-confirm {
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── SLIDERS (STEP 2) ──────────────────────────────── */
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 680px;
+}
+
+.slider-row {}
+
+.slider-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.slider-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1a1a1a;
+}
+
+.slider-value {
+  font-size: 14px;
+  color: #7a7468;
+  font-weight: 300;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: #d8d2c8;
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  cursor: pointer;
+  border: none;
+}
+
+/* ── AVAILABILITY GRID (STEP 3) ────────────────────── */
+.availability-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 8px;
+  max-width: 780px;
+}
+
+.grid-corner { }
+
+.day-header {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7a7468;
+  font-weight: 500;
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.slot-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a7468;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+
+.slot-cell {
+  height: 68px;
+  background: #EAE5DC;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.slot-cell:hover {
+  background: #d8d2c8;
+}
+
+.slot-cell.selected {
+  background: #1a1a2e;
+}
+
+/* ── READY (STEP 4) ────────────────────────────────── */
+.ready-view {
+  align-items: flex-start;
+}
+
+.headline-ready {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 8vw, 88px);
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.recap-card {
+  background: #C5E8C8;
+  border-radius: 18px;
+  padding: 1.5rem 2rem;
+  margin-top: 1.5rem;
+  min-width: 280px;
+}
+
+.recap-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5a7a5a;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.recap-item {
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.recap-item:last-child { margin-bottom: 0; }
+
+/* ── FOOTER NAV ────────────────────────────────────── */
+.footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 3rem;
+}
+
+.btn-back {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #7a7468;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.btn-back:hover { color: #1a1a1a; }
+
+.btn-next {
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-next:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: translateX(2px);
+}
+
+.btn-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

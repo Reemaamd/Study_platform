@@ -1,4 +1,10 @@
 import { Routes } from '@angular/router';
+// Use lazy-loaded standalone components to avoid direct imports that may fail
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { SettingsComponent } from './pages/user-settings/settings.component';
+import { AnalyticsComponent } from './pages/analytics/analytics.component';
+import { PlanningComponent } from './pages/planning/planning.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
 
@@ -23,18 +29,9 @@ export const routes: Routes = [
         .then(m => m.RegisterComponent),
   },
 
-  {
-    path: 'dashboard',
-    loadComponent: () =>
-      import('./pages/dashboard/dashboard.component')
-        .then(m => m.DashboardComponent),
-  },
-
-  {
+     {
     path: 'analytics',
-    loadComponent: () =>
-      import('./pages/analytics/analytics.component')
-        .then(m => m.AnalyticsComponent),
+    component: AnalyticsComponent
   },
 
   {
@@ -44,27 +41,37 @@ export const routes: Routes = [
         .then(m => m.GroupsComponent),
   },
 
+    {
+    path: 'dashboard',
+    component: DashboardComponent
+  },
+  {
+  path: 'onboarding',
+  loadComponent: () =>
+    import('./pages/onboarding/onboarding.component')
+      .then(m => m.OnboardingComponent)
+  },
   {
     path: 'planning',
-    loadComponent: () =>
-      import('./pages/planning/planning.component')
-        .then(m => m.PlanningComponent),
+    component: PlanningComponent
   },
-
   {
-    path: 'notification',
-    loadComponent: () =>
-      import('./pages/notification/notification.component')
-        .then(m => m.NotificationComponent),
-  },
-
+  path: 'weekly-onboarding',
+  loadComponent: () =>
+    import('./pages/weekly-onboarding/weekly-onboarding.component')
+      .then(m => m.WeeklyOnboardingComponent),
+},
+{
+  path: 'notifications',
+  loadComponent: () =>
+    import('./pages/notifications/notifications.component')
+      .then(m => m.NotificationsComponent),
+},
   {
-    path: 'settings',
-    loadComponent: () =>
-      import('./pages/settings/settings.component')
-        .then(m => m.SettingsComponent),
-  },
-
+  path: 'admin',
+  loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
+},
+ { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   {
     path: '**',
     redirectTo: '',

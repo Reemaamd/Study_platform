@@ -35,4 +35,9 @@ public class NotificationController {
     public long unreadCount(@AuthenticationPrincipal UserDetails user) {
         return service.unreadCount(user.getUsername());
     }
+    // PUT /notifications/read-all
+    @PutMapping("/mark-all-read")
+    public void markAllAsRead(@RequestParam String username) {
+        service.markAllAsRead(username);
+    }
 }

@@ -20,8 +20,10 @@ public class UserMapper {
 
     public UserResponse toResponse(Utilisateur user) {
         return UserResponse.builder()
+                .id(user.getId())  // ← AJOUTE ÇA
                 .name(user.getName())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole())
                 .build();
     }

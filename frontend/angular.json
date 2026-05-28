@@ -9,7 +9,15 @@
   "projects": {
     "frontend": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+  "@schematics/angular:component": {
+    "standalone": true,
+    "flat": false,
+    "style": "css",
+    "skipTests": false,
+    "type": "component"
+  }
+},
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -45,8 +53,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kB",
-                  "maximumError": "12kB"
+                  "maximumWarning": "40kB",
+                  "maximumError": "40kB"
                 }
               ],
               "outputHashing": "all"
@@ -69,7 +77,8 @@
               "buildTarget": "frontend:build:production"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "frontend:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

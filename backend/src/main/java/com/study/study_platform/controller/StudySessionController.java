@@ -1,6 +1,10 @@
 package com.study.study_platform.controller;
 
+import com.study.study_platform.dto.StudySessionDTO;
 import com.study.study_platform.model.document.StudySession;
+import com.study.study_platform.model.document.Utilisateur;
+import com.study.study_platform.repository.StudySessionRepository;
+import com.study.study_platform.repository.UserRepository;
 import com.study.study_platform.service.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +22,8 @@ import java.util.List;
 public class StudySessionController {
 
     private final StudySessionService service;
+    private final UserRepository userRepository;
+
 
     @PostMapping("/generate")
     public List<StudySession> generate(
@@ -25,14 +31,25 @@ public class StudySessionController {
 
         return service.generateWeeklyPlan(userDetails.getUsername());
     }
+
     @PutMapping("/{id}/complete")
     public StudySession completeSession(
             @PathVariable String id,
-            Authentication authentication
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        String username = authentication.getName();
+        // ✅ Récupérer l'ID réel depuis le username
+        Utilisateur user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return service.completeSession(id, username);
+        return service.completeSession(id, user.getId()); // ✅ passer l'ID, pas le username
+    }
+
+    @GetMapping
+    public List<StudySessionDTO> getUserSessions(
+            @AuthenticationPrincipal UserDetails u,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        return service.getUserSessions(u.getUsername(), startDate, endDate);
     }
 }

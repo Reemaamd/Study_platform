@@ -1,0 +1,237 @@
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header class="planning-header">
+  <div>
+    <p class="header-label">Atelier · Planning</p>
+    <div class="week-nav">
+      <button class="week-arrow" (click)="changeWeek(-1)">‹</button>
+      <h1 class="header-title">
+        Semaine {{ weekNumber }} · <em>{{ weekLabel }}</em>
+      </h1>
+      <button class="week-arrow" (click)="changeWeek(1)">›</button>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn-auto"
+            [class.loading]="generating"
+            [disabled]="generating"
+            (click)="generate()">
+      {{ generating ? '⟳ Génération…' : '✦ Auto-générer' }}
+    </button>
+    <button class="btn-auto btn-secondary"
+            (click)="openAvailModal()">
+      ⚙️ Disponibilités
+    </button>
+    <button class="btn-auto btn-secondary"
+          (click)="openObjectiveModal()">
+     Objectifs
+    </button>
+  </div>
+</header>
+
+<!-- ══════════════════════ BODY ══════════════════════ -->
+<div class="planning-body">
+
+  <!-- ─── Sidebar ─── -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <h3>Matières</h3>
+      <div *ngFor="let entry of subjectList" class="subject-item">
+        <div class="subject-left">
+          <span class="dot" [style.background]="entry[1].dot"></span>
+          <span class="subject-name">{{ entry[1].name }}</span>
+        </div>
+        <span class="priority-badge"
+              [ngClass]="'priority-' + priorityFor(entry[0]).toLowerCase()">
+          {{ priorityFor(entry[0]) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Contraintes</h3>
+      <p class="constraint-item">· Pas de session après 20h</p>
+      <p class="constraint-item">· Max 2h consécutives</p>
+      <p class="constraint-item">· Samedi : matin seulement</p>
+    </div>
+
+  </aside>
+
+  <!-- ─── Calendar ─── -->
+  <div class="calendar-wrap">
+
+    <!-- Loading / Error overlay -->
+    <div class="state-overlay" *ngIf="loading || error">
+      <ng-container *ngIf="loading && !error">
+        <div class="spinner"></div>
+        <span class="state-label">Chargement du planning…</span>
+      </ng-container>
+      <ng-container *ngIf="error">
+        <span class="state-error" [innerHTML]="error"></span>
+        <button class="btn-auto" (click)="load()">↺ Réessayer</button>
+      </ng-container>
+    </div>
+
+    <!-- Day header row -->
+    <div class="cal-header">
+      <div class="cal-header-gutter"></div>
+      <div *ngFor="let day of days"
+           class="cal-day-header"
+           [class.today]="day.isToday">
+        <span class="day-label">{{ day.label }}</span>
+        <span class="day-num">{{ day.date.getDate() }}</span>
+      </div>
+    </div>
+
+    <!-- Grid body -->
+    <div class="cal-body">
+      <div class="cal-grid">
+
+        <!-- Hour rows (background grid) -->
+        <div *ngFor="let h of hours" class="hour-row">
+          <div class="hour-label">{{ h }}:00</div>
+          <div *ngFor="let _ of dayColumns" class="hour-cell"></div>
+        </div>
+
+        <!-- Sessions overlay -->
+        <div class="sessions-layer">
+          <div *ngFor="let col of dayColumns; let i = index" class="day-column">
+
+            <div *ngFor="let b of blocksForDay(i)"
+                 [ngClass]="blockClasses(b)"
+                 [ngStyle]="blockStyle(b)">
+
+              <div class="session-title">
+                {{ b.subject.name }}
+                <span *ngIf="b.priority !== 99"
+                      class="priority-dot"
+                      [title]="'Priorité ' + b.priority"></span>
+              </div>
+
+              <div class="session-time">{{ b.timeLabel }}</div>
+
+              <span *ngIf="b.status === 'ONGOING'"   class="status-badge ongoing">En cours</span>
+              <span *ngIf="b.status === 'DONE'"      class="status-badge done">✓</span>
+              <span *ngIf="b.status === 'CANCELLED'" class="status-badge cancelled">✗</span>
+
+              <button *ngIf="b.status === 'ONGOING' && b.session.id"
+                      class="session-complete-btn"
+                      (click)="complete(b, $event)">
+                ✓ Compléter
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════════════ AVAILABILITY MODAL ══════════════════════ -->
+<div class="modal-backdrop" *ngIf="showAvailModal" (click)="closeAvailModal()"></div>
+<div class="modal" *ngIf="showAvailModal">
+  <div class="modal-header">
+    <h2>Ajouter une disponibilité</h2>
+    <button class="modal-close" (click)="closeAvailModal()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <div class="form-group">
+      <label>Jour de la semaine</label>
+      <select [(ngModel)]="availForm.day" class="form-input">
+        <option value="MONDAY">Lundi</option>
+        <option value="TUESDAY">Mardi</option>
+        <option value="WEDNESDAY">Mercredi</option>
+        <option value="THURSDAY">Jeudi</option>
+        <option value="FRIDAY">Vendredi</option>
+        <option value="SATURDAY">Samedi</option>
+        <option value="SUNDAY">Dimanche</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Heure de début</label>
+        <input type="time" [(ngModel)]="availForm.startTime" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>Heure de fin</label>
+        <input type="time" [(ngModel)]="availForm.endTime" class="form-input" />
+      </div>
+    </div>
+
+    <div *ngIf="availError" class="form-error">
+      {{ availError }}
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-cancel" (click)="closeAvailModal()">Annuler</button>
+    <button class="btn-primary" 
+            [disabled]="availLoading"
+            (click)="addAvailability()">
+      {{ availLoading ? '⟳ Ajout…' : '✓ Ajouter' }}
+    </button>
+  </div>
+</div>
+<!-- ══════════════════════ OBJECTIVE MODAL ══════════════════════ -->
+<div class="modal-backdrop" *ngIf="showObjectiveModal" (click)="closeObjectiveModal()"></div>
+<div class="modal" *ngIf="showObjectiveModal">
+  <div class="modal-header">
+    <h2>Nouvel objectif</h2>
+    <button class="modal-close" (click)="closeObjectiveModal()">✕</button>
+  </div>
+
+<div class="modal-body">
+  <div class="form-group">
+    <label>Titre</label>
+    <input type="text" [(ngModel)]="objectiveForm.title"
+           class="form-input" placeholder="Ex : Finir le chapitre 3" />
+  </div>
+
+  <div class="form-group">
+    <label>Matière</label>
+    <select [(ngModel)]="objectiveForm.subjectId" class="form-input">
+      <option *ngFor="let entry of subjectList" [value]="entry[0]">
+        {{ entry[1].name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Objectif hebdo (h)</label>
+      <input type="number" [(ngModel)]="objectiveForm.weeklyGoal"
+             class="form-input" min="1" max="40" />
+    </div>
+<div class="form-group">
+  <label>Priorité (1 = haute)</label>
+  <input type="number" 
+         [(ngModel)]="objectiveForm.priority"
+         class="form-input" 
+         min="1" 
+         max="10" />
+</div>
+  </div>
+
+  <div *ngIf="objectiveError" class="form-error">
+    {{ objectiveError }}
+  </div>
+</div>
+
+  <div class="modal-footer">
+    <button class="btn-cancel" (click)="closeObjectiveModal()">Annuler</button>
+    <button class="btn-primary"
+            [disabled]="objectiveLoading"
+            (click)="addObjective()">
+      {{ objectiveLoading ? '⟳ Ajout…' : '✓ Créer' }}
+    </button>
+  </div>
+</div>
+
+<app-bottom-nav></app-bottom-nav>

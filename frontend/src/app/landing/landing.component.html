@@ -1,15 +1,23 @@
 <!-- NAV -->
 <nav class="nav">
-  <a class="nav-logo" routerLink="/">Loci.</a>
+  <a class="nav-logo" routerLink="/">FocusRKA.</a>
 
   <div class="nav-actions">
-    <button class="btn-ghost" routerLink="/login">
-      Se connecter
-    </button>
+    <ng-container *ngIf="!isLoggedIn">
+      <button class="btn-ghost" routerLink="/login">
+        Se connecter
+      </button>
 
-    <button class="btn-dark" routerLink="/register">
-      Entrer dans l'atelier ↗
-    </button>
+      <button class="btn-dark" routerLink="/register">
+        Entrer dans l'atelier ↗
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="isLoggedIn">
+      <button class="btn-profile" (click)="goToSettings()" title="Accéder au profil">
+        ⚙
+      </button>
+    </ng-container>
   </div>
 </nav>
 
@@ -27,30 +35,14 @@
     </h1>
 
     <p class="hero-desc">
-      Loci transforme votre semaine en un plan vivant — vos matières, vos pics d'énergie,
+      FocusRKA transforme votre semaine en un plan vivant — vos matières, vos pics d'énergie,
       les sessions de vos cercles. Une IA douce orchestre, vous gardez la main.
     </p>
 
     <div class="hero-cta">
       <button class="btn-dark" routerLink="/register">
-        Commencer maintenant ↗
+        Commencer maintenant
       </button>
-
-      <button class="btn-outline">
-        Voir un planning d'exemple
-      </button>
-    </div>
-
-    <div class="hero-stats">
-      <div>
-        <strong>12 400+</strong>
-        <span>étudiants concentrés</span>
-      </div>
-
-      <div>
-        <strong>38h</strong>
-        <span>économisées / mois</span>
-      </div>
     </div>
   </div>
 
@@ -66,7 +58,7 @@
 
       <div class="card-header">
         <span class="card-date">LUN · 18 MARS</span>
-        <span class="card-focus">⚡ FOCUS MODE</span>
+        <span class="card-focus">FOCUS MODE</span>
       </div>
 
       @for (session of sessions; track $index) {
@@ -81,12 +73,12 @@
         <p>Aucune session disponible</p>
       }
 
-      <div class="card-ai-row">
-        <span>✦ L'IA propose 1h45 de rab pour Algèbre</span>
+    <!-- <div class="card-ai-row">
+        <span>L'IA propose 1h45 de rab pour Algèbre</span>
         <button class="btn-apply">
           Appliquer
-        </button>
-      </div>
+        </button> 
+      </div> -->
 
     </div>
   </div>
@@ -132,7 +124,7 @@
     "L'étude n'est pas une <em>course</em>. C'est un atelier — où l'on revient, on ajuste, on recommence."
   </blockquote>
 
-  <p class="quote-source">— MANIFESTE LOCI</p>
+  <p class="quote-source">— MANIFESTE FOCUSRKA</p>
 
 </section>
 
@@ -157,9 +149,7 @@
         Créer mon compte ↗
       </button>
 
-      <button class="btn-dark-outline">
-        Explorer la démo
-      </button>
+
     </div>
 
   </div>
@@ -168,6 +158,6 @@
 
 <!-- FOOTER -->
 <footer class="footer">
-  <span>© 2026 LOCI · ATELIER D'ÉTUDE</span>
+  <span>© 2026 FOCUSRKA · ATELIER D'ÉTUDE</span>
   <span>FAIT AVEC ATTENTION · PARIS / CASABLANCA</span>
 </footer>

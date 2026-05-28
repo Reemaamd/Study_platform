@@ -43,8 +43,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/users/**").hasRole("USER")
+                        .requestMatchers("/users/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/users/availabilities/**").hasRole("USER")
+                        .requestMatchers("/study-sessions/**").hasRole("USER")
+                        .requestMatchers("/onboarding/**").hasRole("USER")
+                        .requestMatchers("/statistics/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/statistics/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/groups/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
 
@@ -75,5 +80,5 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-}
 
+}

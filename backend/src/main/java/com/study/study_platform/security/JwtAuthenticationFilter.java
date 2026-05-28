@@ -1,6 +1,7 @@
 package com.study.study_platform.security;
 
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
 
-        if (path.startsWith("/auth/login")) {
+        if (path.startsWith("/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,7 +44,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Extraire le token
         String token = authHeader.substring(7);
-        String username = jwtUtils.getUsernameFromJwt(token);
+        String username = null;
+
+        try {
+            username = jwtUtils.getUsernameFromJwt(token);
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+            return; // ← stop, ne pas continuer
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -67,6 +78,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 System.out.println("Authentifié: " + userDetails.getUsername() +
                         ", roles: " + userDetails.getAuthorities());
+                // ✅ AJOUTE CES LOGS ICI
+                System.out.println(">>> URI = " + request.getRequestURI());
+                System.out.println(">>> TOKEN USERNAME = " + username);
+                System.out.println(">>> AUTHORITIES = " + userDetails.getAuthorities());
 
             }
         }

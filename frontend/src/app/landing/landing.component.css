@@ -59,6 +59,14 @@ nav.nav {
 .btn-outline { background: rgba(255,255,255,.72); border-color: rgba(14,26,43,.14); color: var(--dark); }
 .btn-outline:hover { border-color: rgba(14,26,43,.32); }
 
+.btn-profile {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid rgba(14,26,43,.18);
+  background: transparent; color: var(--dark); font-size: 1.2rem; cursor: pointer;
+  transition: transform var(--transition), background-color var(--transition), border-color var(--transition);
+}
+.btn-profile:hover { transform: translateY(-1px); background: var(--dark); color: #fff; border-color: var(--dark); }
+
 .btn-apply {
   background: transparent; border: 0; padding: 0; cursor: pointer;
   color: var(--dark); font: 600 .85rem var(--font-sans); text-decoration: underline; text-underline-offset: .22em;
@@ -112,7 +120,7 @@ nav.nav {
 }
 .hero-stats strong { color: var(--dark); font-family: var(--font-serif); font-size: 2rem; font-weight: 700; }
 
-.hero-card-wrapper { flex: 1; position: relative; max-width: 36rem; animation-delay: .12s; }
+.hero-card-wrapper { flex: 1; position: relative; max-width: 45rem; animation-delay: .12s; }
 
 .streak-badge {
   position: absolute; top: -1.25rem; right: -1rem; z-index: 10;
@@ -124,7 +132,9 @@ nav.nav {
 
 .planning-card, .feature-card, .cta-banner { border: 1px solid var(--surface-border); }
 .planning-card {
-  overflow: hidden; border-radius: 1.25rem; background: rgba(255,255,255,.86); box-shadow: 0 1rem 3rem rgba(14,26,43,.12);
+  overflow: hidden; border-radius: 1.25rem; background: rgba(255,255,255,.86); 
+  box-shadow: 0 1.5rem 4rem rgba(61,154,110,.25), 0 1rem 3rem rgba(14,26,43,.12);
+  min-height: 35rem;
 }
 .card-header, .card-ai-row {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem;

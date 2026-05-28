@@ -1,0 +1,90 @@
+<div class="notif-page">
+
+  <!-- TOP BAR -->
+  <header class="notif-topbar">
+    <div class="topbar-brand">
+      <span class="topbar-dot"></span>
+      <span class="topbar-label">Boîte · Centre de notifications</span>
+    </div>
+    <button
+      class="mark-all-btn"
+      (click)="markAllRead()"
+      [disabled]="markingAll || unreadCount() === 0"
+    >
+      <span>✓</span> Tout marquer lu
+    </button>
+  </header>
+
+  <!-- HERO HEADER -->
+  <section class="notif-hero">
+    <div>
+      <div class="hero-eyebrow">🔔 Activité récente</div>
+      <h1 class="notif-title">
+        Notifications
+        <!--
+          Le badge se met à jour automatiquement car unreadCount() est
+          recalculé à chaque cycle de détection Angular.
+          Quand notif.isRead passe à true (après markRead ou markAllRead),
+          Angular recalcule unreadCount() → le badge se met à jour
+          immédiatement sans rechargement HTTP.
+        -->
+        <span class="unread-badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+      </h1>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <div class="notif-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="notif-state" *ngIf="!loading && groups.length === 0">
+    <div class="empty-icon">🌿</div>
+    <p>Aucune notification pour le moment.</p>
+  </div>
+
+  <!-- LIST -->
+  <main class="notif-content" *ngIf="!loading && groups.length > 0">
+    <section class="notif-group" *ngFor="let group of groups">
+
+      <p class="group-label">{{ group.label }}</p>
+
+      <div
+        *ngFor="let notif of group.items; let i = index"
+        class="notif-card"
+        [ngClass]="cardClass(notif.type)"
+        [class.is-read]="notif.isRead"
+        [style.animation-delay]="i * 60 + 'ms'"
+        (click)="markRead(notif)"
+      >
+        <!-- Dot : orange pulsant = non lu | cercle vide = lu -->
+        <span class="dot" [class.dot-read]="notif.isRead"></span>
+
+        <!-- Icône dans carré arrondi -->
+        <div class="notif-icon-wrap">{{ typeIcon(notif.type) }}</div>
+
+        <!-- Contenu -->
+        <div class="notif-body">
+          <p class="notif-message">{{ notif.message }}</p>
+          <p class="notif-sub">{{ formatDate(notif.createdAt) }}</p>
+        </div>
+
+        <!-- Tag type -->
+        <span class="notif-type-tag">{{ typeLabel(notif.type) }}</span>
+
+        <!--
+          Check vert : visible uniquement quand is-read = true.
+          Animé via CSS (scale + opacity), pas besoin de *ngIf.
+          Donne un feedback clair que la notif a bien été marquée lue.
+        -->
+        <span class="notif-read-check">✓</span>
+      </div>
+
+    </section>
+  </main>
+
+</div>
+
+<app-bottom-nav></app-bottom-nav>
