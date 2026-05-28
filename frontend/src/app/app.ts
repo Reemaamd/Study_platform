@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+
+import { Router, RouterOutlet } from '@angular/router';
+
+import { CommonModule } from '@angular/common';
+
+import { BottomNavComponent } from './shared/bottom-nav/bottom-nav.component';
 
 // ⚠️ NE PAS injecter WeekGuardService ici.
 // La vérification de semaine se fait dans login.component.ts
@@ -9,7 +14,42 @@ import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    BottomNavComponent
+  ],
+  templateUrl: './app.html',
+  styleUrls: ['./app.css']
 })
-export class AppComponent {}
+export class AppComponent {
+
+  constructor(
+    private router: Router
+  ) {}
+
+  showBottomNavbar(): boolean {
+
+    const token =
+      localStorage.getItem('token');
+
+    const role =
+      localStorage.getItem('role');
+
+    const currentUrl =
+      this.router.url;
+
+    const hiddenRoutes = [
+
+      '/',
+      '/login',
+      '/register'
+
+    ];
+
+    return !!token
+      && role === 'USER'
+      && !hiddenRoutes.includes(currentUrl);
+  }
+
+}

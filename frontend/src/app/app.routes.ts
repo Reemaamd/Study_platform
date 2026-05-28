@@ -2,21 +2,45 @@ import { Routes } from '@angular/router';
 // Use lazy-loaded standalone components to avoid direct imports that may fail
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { SettingsComponent } from './pages/user-settings/settings.component';
+import { AnalyticsComponent } from './pages/analytics/analytics.component';
+import { PlanningComponent } from './pages/planning/planning.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
+
   {
     path: '',
-    loadComponent: () => import('./landing/landing.component').then(m => m.LandingComponent),
+    loadComponent: () =>
+      import('./landing/landing.component')
+        .then(m => m.LandingComponent),
   },
+
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () =>
+      import('./pages/login/login.component')
+        .then(m => m.LoginComponent),
   },
+
   {
     path: 'register',
-    loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent),
+    loadComponent: () =>
+      import('./pages/register/register.component')
+        .then(m => m.RegisterComponent),
   },
+
+     {
+    path: 'analytics',
+    component: AnalyticsComponent
+  },
+
+  {
+    path: 'groups',
+    loadComponent: () =>
+      import('./pages/groups/groups.component')
+        .then(m => m.GroupsComponent),
+  },
+
     {
     path: 'dashboard',
     component: DashboardComponent
@@ -28,10 +52,8 @@ export const routes: Routes = [
       .then(m => m.OnboardingComponent)
   },
   {
-  path: 'planning',
-  loadComponent: () =>
-    import('./pages/planning/planning.component')
-      .then(m => m.PlanningComponent)
+    path: 'planning',
+    component: PlanningComponent
   },
   {
   path: 'weekly-onboarding',
@@ -53,6 +75,6 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: '',
-  }
+  },
 
 ];

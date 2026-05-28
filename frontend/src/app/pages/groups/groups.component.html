@@ -1,0 +1,1117 @@
+<div class="groups-page">
+
+  <!-- ═════════════════ HEADER ═════════════════════════ -->
+  <header class="page-header">
+
+    <div class="header-left">
+
+      <span class="eyebrow">
+        GROUPES D'ÉTUDE
+      </span>
+
+      <h1>
+        On <em>étudie</em> mieux ensemble.
+      </h1>
+
+    </div>
+
+    <div class="header-actions">
+
+      <!-- Invitations -->
+
+      <button
+        *ngIf="invitations.length"
+        class="btn-badge"
+        (click)="showInvitListModal = true"
+      >
+
+        👥
+
+        <span class="badge-count">
+          {{ invitations.length }}
+        </span>
+
+      </button>
+
+      <!-- Notifications -->
+
+      <button
+        *ngIf="unreadCount > 0"
+        class="btn-badge btn-badge--notif"
+      >
+
+        🔔
+
+        <span class="badge-count">
+          {{ unreadCount }}
+        </span>
+
+      </button>
+
+      <!-- Create -->
+
+      <button
+        class="btn-primary"
+        (click)="openCreateModal()"
+      >
+
+        + Nouveau groupe
+
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- ═════════════════ GROUPS GRID ═════════════════════ -->
+<section class="groups-grid">
+
+  <!-- Loading -->
+
+  <ng-container *ngIf="loadingGroups; else groupsContent">
+
+    <div class="loading-state">
+
+      <div class="spinner"></div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- Groups -->
+
+  <ng-template #groupsContent>
+
+    <div class="groups-inner">
+      <div
+        *ngFor="let g of groups; let i = index"
+        class="group-card"
+        [style.background]="groupColor(i)"
+        [class.active]="selectedGroup?.id === g.id"
+        (click)="selectGroup(g)"
+      >
+
+        <h2 class="gc-name">
+          {{ g.name }}
+        </h2>
+
+        <p class="gc-members-count">
+          {{ (g.members || []).length }} membre(s)
+        </p>
+
+        <!-- Actions -->
+
+        <div class="group-actions">
+
+          <!-- OWNER -->
+
+          <button
+            *ngIf="isOwner(g)"
+            class="group-action-delete"
+            (click)="deleteGroup(g, $event)"
+          >
+            Supprimer
+          </button>
+
+          <!-- MEMBER -->
+
+          <button
+            *ngIf="!isOwner(g)"
+            class="group-action-leave"
+            (click)="leaveGroup(g, $event)"
+          >
+            Quitter
+          </button>
+
+        </div>
+
+        <!-- Avatars -->
+
+        <div class="avatars">
+
+          <span
+            class="avatar"
+            *ngFor="let m of membersPreview(g)"
+          >
+
+            {{ memberInitial(m) }}
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- Empty -->
+
+      <div
+        *ngIf="groups.length === 0"
+        class="empty-dashboard"
+      >
+
+        <div class="empty-hero">
+
+          <div class="empty-icon">
+            👥
+          </div>
+
+          <h2>
+            Aucun groupe pour le moment
+          </h2>
+
+          <p>
+            Créez votre premier espace collaboratif
+            pour discuter, planifier des sessions
+            et travailler avec vos collègues.
+          </p>
+
+          <button
+            class="btn-primary"
+            (click)="openCreateModal()"
+          >
+            + Créer un groupe
+          </button>
+
+        </div>
+
+        <div class="empty-features">
+
+          <div class="empty-feature-card">
+
+            <span class="feature-emoji">
+              💬
+            </span>
+
+            <h3>
+              Chat temps réel
+            </h3>
+
+            <p>
+              Discutez avec les membres du groupe
+              et partagez vos idées.
+            </p>
+
+          </div>
+
+          <div class="empty-feature-card">
+
+            <span class="feature-emoji">
+              📅
+            </span>
+
+            <h3>
+              Sessions collaboratives
+            </h3>
+
+            <p>
+              Organisez facilement des sessions
+              d'étude selon vos disponibilités.
+            </p>
+
+          </div>
+
+          <div class="empty-feature-card">
+
+            <span class="feature-emoji">
+              🔔
+            </span>
+
+            <h3>
+              Notifications intelligentes
+            </h3>
+
+            <p>
+              Restez informé des invitations,
+              messages et événements importants.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </ng-template>
+
+  </section>
+
+  <!-- ═════════════════ WORKSPACE ═══════════════════════ -->
+
+  <section
+    class="workspace-layout"
+    *ngIf="selectedGroup"
+  >
+
+    <!-- ═════════ CHAT ═════════ -->
+
+    <div class="workspace-card workspace-chat">
+
+      <div class="workspace-head">
+
+        <h3>
+          💬 Chat · {{ selectedGroup.name }}
+        </h3>
+
+      </div>
+
+      <div
+        class="chat-messages"
+        id="chat-messages"
+      >
+
+        <div
+          *ngIf="messages.length === 0"
+          class="chat-empty"
+        >
+
+          Aucun message. Soyez le premier !
+
+        </div>
+
+        <div
+          *ngFor="let m of messages"
+          class="msg-wrap"
+        >
+
+          <div class="msg-group">
+
+            <span class="msg-sender">
+
+              {{ m.senderUsername || 'Utilisateur' }}
+
+            </span>
+
+            <div class="msg-bubble">
+
+              {{ m.content }}
+
+            </div>
+
+            <span class="msg-time">
+
+              {{ formatTime(m.createdAt) }}
+
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="chat-input-row">
+
+        <input
+          class="chat-input"
+          type="text"
+          placeholder="Écrire un message…"
+          [(ngModel)]="newMessage"
+          (keydown)="onEnter($event)"
+        />
+
+        <button
+          class="btn-send"
+          (click)="sendMessage()"
+          [disabled]="!newMessage.trim() || sendingMsg"
+        >
+
+          Envoyer
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ═════════ NOTIFICATIONS ═════════ -->
+
+    <div class="workspace-card workspace-notifs">
+
+      <div class="workspace-head">
+
+        <h3>
+          🔔 Notifications
+        </h3>
+
+      </div>
+
+      <div
+        *ngIf="notifications.length === 0"
+        class="empty-slots"
+      >
+
+        Aucune notification.
+
+      </div>
+
+      <div class="notif-list">
+
+        <div
+          *ngFor="let n of notifications"
+          class="notif-item"
+          [style.background]="notifColor(n.type)"
+          [class.notif-read]="n.isRead"
+          (click)="markRead(n.id)"
+        >
+
+          <p class="notif-msg">
+            {{ n.message }}
+          </p>
+
+          <span class="notif-time">
+            {{ formatDate(n.createdAt) }}
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ═════════ MEMBRES ═════════ -->
+
+    <div class="workspace-card workspace-members">
+
+      <div class="workspace-head">
+
+        <h3>
+          👥 Membres · {{ selectedGroup.name }}
+        </h3>
+
+        <button
+          *ngIf="isOwner(selectedGroup)"
+          class="btn-invite-sm"
+          (click)="openInviteModal()"
+        >
+          + Inviter
+        </button>
+
+      </div>
+
+      <div class="members-list">
+
+        <div
+          class="member-item"
+          *ngFor="let member of (selectedGroup.members || [])"
+        >
+
+          <div class="member-avatar">
+
+            {{ memberInitial(member) }}
+
+          </div>
+
+          <div class="member-info">
+
+            <span class="member-id">
+
+              {{ member.username }}
+
+            </span>
+
+            <span
+              class="member-role"
+              *ngIf="member.owner"
+            >
+
+              Propriétaire
+
+            </span>
+
+            <!-- Remove member -->
+
+            <button
+              *ngIf="
+                isOwner(selectedGroup)
+                &&
+                !member.owner
+              "
+              class="remove-member-btn"
+              (click)="removeMember(member.id)"
+            >
+              Retirer
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ═════════ SESSIONS ═════════ -->
+
+    <div class="workspace-card workspace-sessions">
+
+      <div class="workspace-head">
+
+        <h3>
+          📅 Sessions disponibles
+        </h3>
+
+        <button
+          class="btn-ghost-sm"
+          (click)="loadCommonSlots(selectedGroup.id)"
+        >
+
+          ↻ Actualiser
+
+        </button>
+
+      </div>
+
+      <!-- Loading -->
+
+      <div
+        *ngIf="loadingSlots"
+        class="loading-inline"
+      >
+
+        <div class="spinner"></div>
+
+      </div>
+
+      <!-- Slots -->
+
+      <div
+        class="slots-list"
+        *ngIf="
+          !loadingSlots
+          &&
+          commonSlots.length > 0
+        "
+      >
+
+        <div
+          class="slot-item"
+          *ngFor="let slot of commonSlots"
+        >
+
+          <div class="slot-info">
+
+            <span class="slot-day">
+
+              {{ dayFr(slot.day) }}
+
+            </span>
+
+            <span class="slot-time">
+
+              {{ slot.startTime }}
+              –
+              {{ slot.endTime }}
+
+            </span>
+
+          </div>
+
+          <button
+            class="btn-plan"
+            (click)="openSessionModal(slot)"
+          >
+
+            Planifier →
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Empty -->
+
+      <div
+        *ngIf="
+          !loadingSlots
+          &&
+          commonSlots.length === 0
+        "
+        class="empty-slots"
+      >
+
+        Aucun créneau trouvé.
+
+      </div>
+      <!-- ═════════════════ GROUP SESSIONS LIST ═════════════════ -->
+
+<div class="workspace-head" style="margin-top:40px;">
+
+  <h3>
+    🎓 Sessions du groupe
+  </h3>
+
+</div>
+
+<!-- Loading -->
+
+<div
+  *ngIf="loadingSessions"
+  class="loading-inline"
+>
+
+  <div class="spinner"></div>
+
+</div>
+
+<!-- Sessions -->
+
+<div
+  class="slots-list"
+  *ngIf="
+    !loadingSessions
+    &&
+    groupSessions.length > 0
+  "
+>
+
+  <div
+    class="slot-item"
+    *ngFor="let session of groupSessions"
+  >
+
+    <div class="slot-info">
+
+      <span class="slot-day">
+
+        {{ formatDate(session.startTime) }}
+
+      </span>
+
+      <span class="slot-time">
+
+        {{ formatTime(session.startTime) }}
+        →
+        {{ formatTime(session.endTime) }}
+
+      </span>
+
+      <span
+        class="session-status"
+        [ngClass]="statusClass(session.status)"
+      >
+
+        {{ session.status }}
+
+      </span>
+
+      <div class="session-type">
+
+  <span *ngIf="session.type === 'PERSONAL'">
+    🔒 Privée
+  </span>
+
+  <span *ngIf="session.type === 'SHARED'">
+    👥 Partagée
+  </span>
+
+  <span *ngIf="session.type === 'COLLABORATIVE'">
+    🤝 Collaborative
+  </span>
+
+</div>
+    </div>
+
+    <div
+      style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <button
+        *ngIf="
+          session.status === 'PLANNED'
+          &&
+          isSessionOwner(session)
+        "
+        class="btn-plan"
+        (click)="startSession(session)"
+      >
+
+        Start
+
+      </button>
+
+      <button
+        *ngIf="
+          session.status === 'ONGOING'
+          &&
+          isSessionOwner(session)
+        "
+        class="btn-plan"
+        (click)="completeSession(session)"
+      >
+
+        Complete
+
+      </button>
+
+      <button
+        *ngIf="
+          session.status !== 'DONE'
+          &&
+          isSessionOwner(session)
+        "
+        class="btn-reject"
+        (click)="cancelSession(session)"
+      >
+
+        Cancel
+
+      </button>
+      <button
+  *ngIf="isSessionOwner(session)"
+  class="btn-share"
+  (click)="shareSession(session)"
+>
+
+  Share
+
+</button>
+
+      <button
+        *ngIf="
+          session.status !== 'ONGOING'
+          &&
+          isSessionOwner(session)
+        "
+        class="group-action-delete"
+        (click)="deleteSession(session)"
+      >
+
+        Delete
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Empty -->
+
+<div
+  *ngIf="
+    !loadingSessions
+    &&
+    groupSessions.length === 0
+  "
+  class="empty-slots"
+>
+
+  Aucune session disponible.
+
+</div>
+
+    </div>
+
+  </section>
+
+  <!-- ═════════════════ CREATE GROUP MODAL ═══════════════ -->
+
+  <div
+    class="overlay"
+    *ngIf="showCreateModal"
+    (click)="closeCreateModal()"
+  >
+
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-head">
+
+        <h3>
+          Nouveau groupe
+        </h3>
+
+        <button
+          class="modal-close"
+          (click)="closeCreateModal()"
+        >
+
+          ✕
+
+        </button>
+
+      </div>
+
+      <label class="modal-label">
+        Nom du groupe
+      </label>
+
+      <input
+        class="modal-input"
+        type="text"
+        placeholder="Ex : Algo L2"
+        [(ngModel)]="newGroupName"
+        (keydown.enter)="createGroup()"
+        autofocus
+      />
+
+      <p
+        class="modal-error"
+        *ngIf="errorMsg"
+      >
+
+        {{ errorMsg }}
+
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn-ghost"
+          (click)="closeCreateModal()"
+        >
+
+          Annuler
+
+        </button>
+
+        <button
+          class="btn-primary"
+          (click)="createGroup()"
+          [disabled]="
+            !newGroupName.trim()
+            ||
+            creatingGroup
+          "
+        >
+
+          {{
+            creatingGroup
+            ? 'Création…'
+            : 'Créer'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ═════════════════ INVITE MODAL ═════════════════════ -->
+
+  <div
+    class="overlay"
+    *ngIf="showInviteModal"
+    (click)="closeInviteModal()"
+  >
+
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-head">
+
+        <h3>
+          Inviter dans
+          « {{ selectedGroup?.name }} »
+        </h3>
+
+        <button
+          class="modal-close"
+          (click)="closeInviteModal()"
+        >
+
+          ✕
+
+        </button>
+
+      </div>
+
+      <label class="modal-label">
+        Nom d'utilisateur
+      </label>
+
+      <input
+        class="modal-input"
+        type="text"
+        placeholder="Entrez le username…"
+        [(ngModel)]="inviteReceiverId"
+        (keydown.enter)="sendInvite()"
+      />
+
+      <p
+        class="modal-error"
+        *ngIf="errorMsg"
+      >
+
+        {{ errorMsg }}
+
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn-ghost"
+          (click)="closeInviteModal()"
+        >
+
+          Annuler
+
+        </button>
+
+        <button
+          class="btn-primary"
+          (click)="sendInvite()"
+          [disabled]="
+            !inviteReceiverId.trim()
+            ||
+            sendingInvite
+          "
+        >
+
+          {{
+            sendingInvite
+            ? 'Envoi…'
+            : 'Inviter'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ═════════════════ INVITATIONS LIST ═════════════════ -->
+
+  <div
+    class="overlay"
+    *ngIf="showInvitListModal"
+    (click)="showInvitListModal = false"
+  >
+
+    <div
+      class="modal modal-wide"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-head">
+
+        <h3>
+          Invitations reçues
+        </h3>
+
+        <button
+          class="modal-close"
+          (click)="showInvitListModal = false"
+        >
+
+          ✕
+
+        </button>
+
+      </div>
+
+      <div
+        *ngIf="invitations.length === 0"
+        class="empty-inv"
+      >
+
+        Aucune invitation en attente.
+
+      </div>
+
+      <div class="inv-list">
+
+        <div
+          class="inv-item"
+          *ngFor="let inv of invitations"
+        >
+
+          <div class="inv-info">
+
+            <span class="inv-group">
+
+              📚 {{ inv.groupName }}
+
+            </span>
+
+            <span class="inv-from">
+
+              Invité par
+              {{ inv.senderUsername }}
+
+            </span>
+
+          </div>
+
+          <div class="inv-actions">
+
+            <button
+              class="btn-accept"
+              (click)="acceptInvite(inv.id); showInvitListModal = false"
+            >
+
+              Accepter
+
+            </button>
+
+            <button
+              class="btn-reject"
+              (click)="rejectInvite(inv.id)"
+            >
+
+              Refuser
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ═════════════════ SESSION MODAL ════════════════════ -->
+
+  <div
+    class="overlay"
+    *ngIf="showSessionModal"
+    (click)="closeSessionModal()"
+  >
+
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-head">
+
+        <h3>
+          Planifier une session
+        </h3>
+
+        <button
+          class="modal-close"
+          (click)="closeSessionModal()"
+        >
+
+          ✕
+
+        </button>
+
+      </div>
+
+      <div class="session-slot-preview">
+
+        <span class="slot-chip">
+
+          {{ dayFr(sessionDay) }}
+
+        </span>
+
+        <span class="slot-chip">
+
+          {{ sessionStartTime }}
+          –
+          {{ sessionEndTime }}
+
+        </span>
+
+      </div>
+
+      <label class="modal-label">
+        Matière
+      </label>
+
+      <select
+        class="modal-input"
+        [(ngModel)]="sessionSubjectId"
+      >
+
+        <option value="">
+          Sélectionner une matière
+        </option>
+
+        <option
+          *ngFor="let s of subjects"
+          [value]="s.id"
+        >
+
+          {{ s.name }}
+
+        </option>
+
+      </select>
+
+      <p class="modal-hint">
+
+        💡 La matière doit vous appartenir.
+        Elle sera partagée avec les membres automatiquement.
+
+      </p>
+
+      <p
+        class="modal-error"
+        *ngIf="sessionError"
+      >
+
+        {{ sessionError }}
+
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn-ghost"
+          (click)="closeSessionModal()"
+        >
+
+          Annuler
+
+        </button>
+
+        <button
+          class="btn-primary"
+          (click)="createSession()"
+          [disabled]="
+            !sessionSubjectId
+            ||
+            creatingSession
+          "
+        >
+
+          {{
+            creatingSession
+            ? 'Création…'
+            : 'Créer la session'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ═════════ TOAST ═════════ -->
+
+  <div
+    class="toast"
+    *ngIf="showToast"
+    [class.toast-error]="toastType === 'error'"
+     [class.toast-success]="toastType === 'success'"
+  >
+
+    {{ toastMessage }}
+
+  </div>
+
+</div>

@@ -1,4 +1,7 @@
 {
+<<<<<<< HEAD
+  "/api": {
+=======
   "/users": {
     "target": "http://localhost:8080",
     "secure": false,
@@ -36,9 +39,14 @@
     "logLevel": "debug"
   },
   "/auth": {
+>>>>>>> 0ac1431ab324a2d8c38a160d0d5615f750524d16
     "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0ac1431ab324a2d8c38a160d0d5615f750524d16

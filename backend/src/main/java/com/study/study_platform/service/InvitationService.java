@@ -39,7 +39,8 @@ public class InvitationService {
             throw new RuntimeException("You are not a member of this group");
         }
 
-        Utilisateur receiver = userRepository.findById(dto.getReceiverId())
+        Utilisateur receiver = userRepository
+                .findByUsername(dto.getReceiverId())
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
         if (group.getMemberIds().contains(receiver.getId())) {
@@ -79,12 +80,17 @@ public class InvitationService {
         return invitationMapper.toResponseDTO(saved);
     }
 
-    public List<Invitation> getMyInvitations(String username) {
+    public List<InvitationResponseDTO> getMyInvitations(String username) {
 
         Utilisateur user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return invitationRepository.findByReceiverId(user.getId());
+        List<Invitation> invitations =
+                invitationRepository.findByReceiverId(user.getId());
+
+        return invitations.stream()
+                .map(invitationMapper::toResponseDTO)
+                .toList();
     }
 
     public String acceptInvitation(String invitationId, String username) {

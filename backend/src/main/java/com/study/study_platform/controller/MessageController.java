@@ -36,7 +36,9 @@ public class MessageController {
     }
 
     @GetMapping("/{groupId}")
-    public List<Message> getMessages(@PathVariable String groupId) {
+    public List<MessageResponseDTO> getMessages(
+            @PathVariable String groupId
+    ) {
         return messageService.getGroupMessages(groupId);
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 import com.study.study_platform.dto.CollaborativeSessionDTO;
 import com.study.study_platform.model.document.StudySession;
 import org.springframework.security.core.Authentication;
+import com.study.study_platform.dto.CollaborativeSessionResponseDTO;
+import com.study.study_platform.mapper.CollaborativeSessionMapper;
 
 @RestController
 @RequestMapping("/collaborative-sessions")
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 public class CollaborativeSessionController {
 
     private final CollaborativeSessionService service;
+    private final CollaborativeSessionMapper mapper;
 
     @GetMapping("/{groupId}/common-availabilities")
     @PreAuthorize("hasRole('USER')")
@@ -99,4 +102,34 @@ public class CollaborativeSessionController {
         );
     }
 
+    @GetMapping("/group/{groupId}")
+    @PreAuthorize("hasRole('USER')")
+    public List<CollaborativeSessionResponseDTO> getGroupSessions(
+            @PathVariable String groupId,
+            Authentication authentication
+    ) {
+
+        return service.getGroupSessions(
+                        groupId,
+                        authentication.getName()
+                ).stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+    @PostMapping("/{sessionId}/share/{groupId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> shareSessionToGroup(
+            @PathVariable String sessionId,
+            @PathVariable String groupId,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                service.shareSessionToGroup(
+                        sessionId,
+                        groupId,
+                        authentication.getName()
+                )
+        );
+    }
 }

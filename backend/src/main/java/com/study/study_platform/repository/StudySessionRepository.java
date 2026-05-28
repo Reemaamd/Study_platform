@@ -17,6 +17,7 @@ public interface StudySessionRepository extends MongoRepository<StudySession, St
             LocalDateTime start,
             LocalDateTime end
     );
+    List<StudySession> findByGroupIdOrderByStartTimeAsc(String groupId);
 
     List<StudySession> findByUserIdAndStartTimeBetween(
             String userId,
