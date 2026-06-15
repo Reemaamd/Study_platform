@@ -23,7 +23,7 @@ export class BottomNavComponent {
 
     { label: 'Planning',     icon: '▦', route: '/planning' },
 
-    { label: 'Notification', icon: '◉', route: '/notification' },
+    { label: 'Notification', icon: '◉', route: '/notifications' },
 
     { label: 'Settings',     icon: '⚙', route: '/settings' },
 
