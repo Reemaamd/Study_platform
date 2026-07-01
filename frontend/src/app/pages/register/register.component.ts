@@ -21,7 +21,12 @@ export class RegisterComponent {
 
   successMessage = '';
   errorMessage = '';
+ showPassword = false; 
 
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+  
   constructor(
     private authService: AuthService,
     private router: Router

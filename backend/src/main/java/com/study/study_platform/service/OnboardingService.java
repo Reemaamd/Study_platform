@@ -76,52 +76,38 @@ public class OnboardingService {
         userRepository.save(user);
 
         // ==============================
-        // SAVE SUBJECTS + OBJECTIVES
-        // ==============================
-        for (OnboardingSubjectDTO dto : request.getSubjects()) {
+      // SAVE SUBJECTS + OBJECTIVES (si présents)
+// ==============================
+        if (request.getSubjects() != null) {
 
-            // ---------- SUBJECT ----------
-            Subject subject = new Subject();
+            for (OnboardingSubjectDTO dto : request.getSubjects()) {
 
-            subject.setName(dto.getName());
+                // ---------- SUBJECT ----------
+                Subject subject = new Subject();
+                subject.setName(dto.getName());
+                subject.setUserId(user.getId());
 
-            subject.setUserId(user.getId());
+                Subject savedSubject = subjectRepository.save(subject);
 
-            Subject savedSubject =
-                    subjectRepository.save(subject);
+                // ---------- OBJECTIVE ----------
+                Objective objective = new Objective();
+                objective.setUserId(user.getId());
+                objective.setSubjectId(savedSubject.getId());
 
-            // ---------- OBJECTIVE ----------
-            Objective objective = new Objective();
+                objective.setTitle(
+                        dto.getTitle() != null && !dto.getTitle().isBlank()
+                                ? dto.getTitle()
+                                : dto.getName()
+                );
 
-            objective.setUserId(user.getId());
+                objective.setWeeklyGoal(dto.getWeeklyGoal());
+                objective.setPriority(dto.getPriority() > 0 ? dto.getPriority() : 2);
+                objective.setProgress(0);
+                objective.setWeekStartDate(weekStart);
+                objective.setWeekEndDate(weekEnd);
 
-            objective.setSubjectId(savedSubject.getId());
-
-            // si title null -> utiliser name
-            objective.setTitle(
-                    dto.getTitle() != null &&
-                            !dto.getTitle().isBlank()
-                            ? dto.getTitle()
-                            : dto.getName()
-            );
-
-            objective.setWeeklyGoal(dto.getWeeklyGoal());
-
-            // default priority
-            objective.setPriority(
-                    dto.getPriority() > 0
-                            ? dto.getPriority()
-                            : 2
-            );
-
-            objective.setProgress(0);
-
-            // ✅ IMPORTANT
-            objective.setWeekStartDate(weekStart);
-
-            objective.setWeekEndDate(weekEnd);
-
-            objectiveRepository.save(objective);
+                objectiveRepository.save(objective);
+            }
         }
     }
 }

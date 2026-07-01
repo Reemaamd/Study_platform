@@ -43,8 +43,8 @@ export class AppComponent {
 
       '/',
       '/login',
-      '/register'
-
+      '/register',
+      '/onboarding'
     ];
 
     return !!token

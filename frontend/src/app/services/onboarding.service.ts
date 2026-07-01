@@ -8,19 +8,13 @@ export interface AvailabilityDTO {
   endTime: string;
 }
 
-export interface SubjectDTO {
-  name: string;
-  title: string;
-  weeklyGoal: number;
-  priority: number;
-}
-
 export interface OnboardingPayload {
-  subjects: SubjectDTO[];
   availability: AvailabilityDTO[];
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class OnboardingService {
 
   private apiUrl = 'http://localhost:8080';
@@ -28,7 +22,12 @@ export class OnboardingService {
   constructor(private http: HttpClient) {}
 
   saveOnboarding(payload: OnboardingPayload): Observable<any> {
-    console.log('📤 Onboarding payload:', payload);
-    return this.http.post(`${this.apiUrl}/onboarding`, payload);
+    console.log('📤 Onboarding payload', payload);
+
+    return this.http.post(
+      `${this.apiUrl}/onboarding`,
+      payload
+    );
   }
+
 }

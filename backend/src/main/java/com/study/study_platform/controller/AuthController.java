@@ -19,7 +19,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
+import com.study.study_platform.dto.ForgotPasswordRequest;
+import com.study.study_platform.dto.VerifyCodeRequest;
+import com.study.study_platform.dto.ResetPasswordRequest;
+import com.study.study_platform.service.EmailService;
 
 
 import java.util.Map;
@@ -34,6 +37,7 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -80,6 +84,70 @@ public class AuthController {
         utilisateurRepository.save(user);
 
         return ResponseEntity.ok("User registered successfully");
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
+                .orElse(null);
+
+        // Toujours répondre OK même si l'email n'existe pas (évite l'énumération d'emails)
+        if (utilisateur == null) {
+            return ResponseEntity.ok(Map.of("message", "Si cet email existe, un code a été envoyé"));
+        }
+
+        String code = String.valueOf((int) (Math.random() * 900000) + 100000); // 6 chiffres
+        utilisateur.setResetCode(code);
+        utilisateur.setResetCodeExpiration(System.currentTimeMillis() + 10 * 60 * 1000); // 10 min
+        utilisateurRepository.save(utilisateur);
+
+        emailService.sendResetCode(utilisateur.getEmail(), code);
+
+        return ResponseEntity.ok(Map.of("message", "Si cet email existe, un code a été envoyé"));
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeRequest request) {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        if (utilisateur.getResetCode() == null ||
+                !utilisateur.getResetCode().equals(request.getCode())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Code invalide"));
+        }
+
+        if (utilisateur.getResetCodeExpiration() == null ||
+                utilisateur.getResetCodeExpiration() < System.currentTimeMillis()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Code expiré"));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Code valide"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        if (utilisateur.getResetCode() == null ||
+                !utilisateur.getResetCode().equals(request.getCode())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Code invalide"));
+        }
+
+        if (utilisateur.getResetCodeExpiration() == null ||
+                utilisateur.getResetCodeExpiration() < System.currentTimeMillis()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Code expiré"));
+        }
+
+        utilisateur.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        utilisateur.setResetCode(null);
+        utilisateur.setResetCodeExpiration(null);
+        utilisateurRepository.save(utilisateur);
+
+        return ResponseEntity.ok(Map.of("message", "Mot de passe réinitialisé avec succès"));
     }
 
 
