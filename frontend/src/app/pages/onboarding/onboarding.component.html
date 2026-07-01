@@ -1,7 +1,7 @@
 <div class="onboarding-shell">
 
   <!-- LOGO -->
-  <div class="logo">Loci<span class="dot">.</span></div>
+  <div class="logo">FOCUSRKA<span class="dot">.</span></div>
 
   <!-- PROGRESS BAR -->
   <div class="stepper">
@@ -43,68 +43,134 @@
     </div>
   </div>
 
-  <!-- ═══════════ STEP 2 — OBJECTIFS ═══════════ -->
-  <div class="step-view" *ngIf="step === 2">
-    <h1 class="headline">Combien <em>d'heures</em> par semaine&nbsp;?</h1>
-    <p class="sub">Soyez ambitieux mais réaliste.</p>
+<!-- ═══════════ STEP 2 — OBJECTIFS (titre uniquement) ═══════════ -->
+<div class="step-view" *ngIf="step === 2">
+  <h1 class="headline">Quels <em>objectifs</em> par matière&nbsp;?</h1>
+  <p class="sub">Ajoutez un ou plusieurs objectifs pour chaque matière. Vous définirez les heures et priorités ensuite.</p>
 
-    <div class="sliders">
-      <div class="slider-row" *ngFor="let s of subjects; let i = index">
-        <div class="slider-meta">
-          <span class="slider-label">{{ s }}</span>
-          <span class="slider-value">{{ objectives[i] || 1 }}h</span>
+  <div class="subject-objectives-list">
+    <div class="subject-card" *ngFor="let s of subjects; let si = index">
+      <div class="subject-card-header">
+        <span class="subject-name" [style.background]="chipColors[si % chipColors.length]">{{ s }}</span>
+        <span class="subject-total">{{ objectivesFor(si).length }} objectif{{ objectivesFor(si).length > 1 ? 's' : '' }}</span>
+      </div>
+
+      <div class="objective-item" *ngFor="let o of objectivesFor(si)">
+        <span class="objective-title">{{ o.title }}</span>
+        <button class="objective-remove" (click)="removeObjective(o.id)">×</button>
+      </div>
+
+      <div class="objective-empty" *ngIf="objectivesFor(si).length === 0 && addingObjectiveFor !== si">
+        Aucun objectif pour l'instant.
+      </div>
+
+      <div class="add-objective-form" *ngIf="addingObjectiveFor === si">
+        <input #objectiveInput class="objective-input" [(ngModel)]="newObjectiveTitle"
+               (keydown.enter)="confirmAddObjective(si)" (keydown.escape)="cancelAddObjective()"
+               placeholder="Ex: Réviser les intégrales..." />
+        <div class="add-objective-actions">
+          <button class="btn-cancel-small" (click)="cancelAddObjective()">Annuler</button>
+          <button class="btn-confirm-small" (click)="confirmAddObjective(si)">Ajouter</button>
         </div>
-        <input type="range" min="1" max="20"
-               [value]="objectives[i] || 1"
-               (input)="setObjective(i, $event)"
-               class="slider" />
+      </div>
+
+      <button class="add-objective-trigger" *ngIf="addingObjectiveFor !== si" (click)="startAddingObjective(si)">
+        + Ajouter un objectif
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ STEP 3 — HEURES / SEMAINE ═══════════ -->
+<div class="step-view" *ngIf="step === 3">
+  <h1 class="headline">Combien d'<em>heures par semaine</em>&nbsp;?</h1>
+  <p class="sub">Total actuel : {{ totalHours }}h/semaine</p>
+
+  <div class="subject-objectives-list">
+    <div class="subject-card" *ngFor="let s of subjects; let si = index">
+      <div class="subject-card-header">
+        <span class="subject-name" [style.background]="chipColors[si % chipColors.length]">{{ s }}</span>
+        <span class="subject-total">{{ hoursFor(si) }}h/sem</span>
+      </div>
+
+      <div class="objective-item" *ngFor="let o of objectivesFor(si)">
+        <span class="objective-title">{{ o.title }}</span>
+        <div class="goal-stepper">
+          <button (click)="decrementGoal(o.id)">−</button>
+          <span>{{ o.weeklyGoal }}h</span>
+          <button (click)="incrementGoal(o.id)">+</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════ STEP 3 — DISPONIBILITÉS ═══════════ -->
-  <div class="step-view" *ngIf="step === 3">
-    <h1 class="headline">Quand <em>êtes</em>-vous libre&nbsp;?</h1>
-    <p class="sub">Cochez vos plages habituelles.</p>
+  <p class="error-message" *ngIf="!allGoalsSet">⚠️ Chaque objectif doit avoir au moins 1h/semaine.</p>
+</div>
 
-    <div class="availability-grid">
-      <div class="grid-corner"></div>
-      <div class="day-header" *ngFor="let d of days">{{ d }}</div>
+<!-- ═══════════ STEP 4 — PRIORITÉ (classement global) ═══════════ -->
+<div class="step-view" *ngIf="step === 4">
+  <h1 class="headline">Classez vos <em>priorités</em></h1>
+  <p class="sub">{{ totalObjectivesCount }} objectifs au total — utilisez les flèches pour réordonner.</p>
 
-      <ng-container *ngFor="let slot of slots; let si = index">
-        <div class="slot-label">{{ slot }}</div>
-        <div class="slot-cell"
-             *ngFor="let d of days; let di = index"
-             [class.selected]="isSelected(si, di)"
-             (click)="toggleSlot(si, di)">
-        </div>
-      </ng-container>
+  <div class="ranked-list">
+    <div class="objective-item" *ngFor="let o of rankedObjectives">
+      <span class="priority-rank">#{{ priorityOf(o.id) }}</span>
+      <span class="objective-title">{{ o.title }} <small>({{ subjectNameOf(o) }})</small></span>
+      <span class="objective-hours">{{ o.weeklyGoal }}h</span>
+      <div class="rank-controls">
+        <button class="rank-btn" [disabled]="!canMoveUp(o.id)" (click)="moveUp(o.id)">▲</button>
+        <button class="rank-btn" [disabled]="!canMoveDown(o.id)" (click)="moveDown(o.id)">▼</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- ═══════════ STEP 4 — PRÊT ═══════════ -->
-  <div class="step-view ready-view" *ngIf="step === 4">
-    <h1 class="headline-ready">Tout est prêt.</h1>
-    <p class="sub">Votre première semaine vous attend dans l'atelier.</p>
+<!-- ═══════════ STEP 5 — DISPONIBILITÉS ═══════════ -->
+<div class="step-view" *ngIf="step === 5">
+  <h1 class="headline">Vos <em>disponibilités</em></h1>
+  <p class="sub">Sélectionnez vos créneaux libres pour étudier. ({{ totalSlots }} sélectionné{{ totalSlots > 1 ? 's' : '' }})</p>
 
-    <div class="recap-card">
-      <p class="recap-label">RÉCAP</p>
-      <p class="recap-item">· {{ subjects.length }} matière{{ subjects.length > 1 ? 's' : '' }}</p>
-      <p class="recap-item">· {{ totalHours }}h d'objectif hebdo</p>
-      <p class="recap-item">· {{ totalSlots }} plage{{ totalSlots > 1 ? 's' : '' }} déclarée{{ totalSlots > 1 ? 's' : '' }}</p>
-    </div>
+  <div class="availability-grid">
+    <div class="grid-corner"></div>
+    <div class="day-header" *ngFor="let day of days">{{ day }}</div>
+
+    <ng-container *ngFor="let slot of slots; let si = index">
+      <div class="slot-label">{{ slot }}</div>
+      <div class="slot-cell"
+           *ngFor="let day of days; let di = index"
+           [class.selected]="isSelected(si, di)"
+           (click)="toggleSlot(si, di)">
+      </div>
+    </ng-container>
   </div>
 
-  <!-- FOOTER NAV -->
+  <p class="error-message" *ngIf="totalSlots === 0">⚠️ Sélectionnez au moins un créneau pour continuer.</p>
+</div>
+
+<!-- ═══════════ STEP 6 — RÉCAP + FINISH ═══════════ -->
+<div class="step-view" *ngIf="step === 6">
+  <h1 class="headline">Récapitulatif</h1>
+  <p class="recap-item">· {{ subjects.length }} matière{{ subjects.length > 1 ? 's' : '' }}</p>
+  <p class="recap-item">· {{ totalObjectivesCount }} objectif{{ totalObjectivesCount > 1 ? 's' : '' }} classé{{ totalObjectivesCount > 1 ? 's' : '' }} par priorité</p>
+  <p class="recap-item">· {{ totalHours }}h/semaine au total</p>
+  <p class="recap-item">· {{ totalSlots }} créneau{{ totalSlots > 1 ? 'x' : '' }} de disponibilité</p>
+
+  <button class="btn-confirm-small" (click)="finish()" [disabled]="loading">
+    {{ loading ? 'Génération en cours...' : 'Générer mon planning' }}
+  </button>
+  <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+</div>
+<!-- ═══════════ FOOTER NAV ═══════════ -->
   <div class="footer-nav">
-    <button class="btn-back" *ngIf="step > 1" (click)="prev()">Retour</button>
+    <button class="btn-back" *ngIf="step > 1" (click)="prev()">← Retour</button>
     <span *ngIf="step === 1"></span>
 
-    <button class="btn-next" *ngIf="step < 4" (click)="next()" [disabled]="step === 1 && subjects.length === 0">
+    <button class="btn-next" *ngIf="step < totalSteps" (click)="next()"
+            [disabled]="(step === 1 && subjects.length === 0)
+                     || (step === 2 && totalObjectivesCount === 0)
+                     || (step === 3 && !allGoalsSet)
+                     || (step === 5 && totalSlots === 0)">
       Continuer →
-    </button>
-    <button class="btn-next" *ngIf="step === 4" (click)="finish()" [disabled]="loading">
-      {{ loading ? 'Enregistrement...' : "Entrer dans l'atelier →" }}
     </button>
   </div>
 

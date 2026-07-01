@@ -28,4 +28,6 @@ public class Utilisateur {
     private List<Availability> availabilities;
 
     private List<String> groupIds;
+    private String resetCode;
+    private Long resetCodeExpiration; // timestamp epoch millis
 }

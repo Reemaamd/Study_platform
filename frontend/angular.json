@@ -33,8 +33,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/material-theme.scss", "src/styles.css"],
-          
+            "styles": [
+  "src/material-theme.scss",
+  "src/styles.css",
+  "src/styles/password.css"
+],
             "outputMode": "static",
             "security": {
               "allowedHosts": []

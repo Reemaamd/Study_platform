@@ -38,21 +38,36 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="login-password">MOT DE PASSE</label>
-          <input
-            id="login-password"
-            class="field-input"
-            type="password"
-            [(ngModel)]="password"
-            name="password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
+  <label class="field-label" for="login-password">MOT DE PASSE</label>
+  <div class="password-wrapper">
+    <input
+      id="login-password"
+      class="field-input"
+      [type]="showPassword ? 'text' : 'password'"
+      [(ngModel)]="password"
+      name="password"
+      autocomplete="current-password"
+      required
+    />
+    <span class="password-eye" (click)="togglePassword()">
+      <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a18.6 18.6 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 7 11 7a18.5 18.5 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+    </span>
+  </div>
+</div>
 
         <button class="btn-submit" type="submit">
           Entrer <span class="btn-arrow">→</span>
         </button>
+        <p class="form-footer-link">
+  <a routerLink="/forgot-password">Mot de passe oublié ?</a>
+</p>
 
       </form>
 

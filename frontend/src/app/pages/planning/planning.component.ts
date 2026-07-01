@@ -310,7 +310,7 @@ export class PlanningComponent implements OnInit {
 
     // 1. Ajouter TOUS les subjects de l'utilisateur d'abord (source de vérité)
     for (const subj of subjectsList) {
-      const subjectId = subj?._id || subj?.id;
+      const subjectId = subj?.id || subj?.id;
       const subjectName = subj?.name;
       
       const idStr = String(subjectId || '').trim();

@@ -202,6 +202,27 @@
 
 .msg--error { color: var(--error); font-size: .86rem; }
 
+
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .field-input {
+  width: 100%;
+  padding-right: 40px;
+}
+.password-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+}
+.password-eye:hover {
+  color: #333;
+}
+
+
 @media (max-width: 768px) {
   .auth-layout { grid-template-columns: 1fr; }
   .auth-panel--brand { display: none; }

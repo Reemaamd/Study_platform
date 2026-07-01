@@ -5,6 +5,9 @@ import { SettingsComponent } from './pages/user-settings/settings.component';
 import { AnalyticsComponent } from './pages/analytics/analytics.component';
 import { PlanningComponent } from './pages/planning/planning.component';
 import { authGuard } from './guards/auth.guard';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { VerifyCodeComponent } from './pages/verify-code/verify-code.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
 
@@ -21,6 +24,18 @@ export const routes: Routes = [
       import('./pages/login/login.component')
         .then(m => m.LoginComponent),
   },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent
+},
+{
+    path: 'verify-code',
+    component: VerifyCodeComponent
+},
+{
+    path: 'reset-password',
+    component: ResetPasswordComponent
+},
 
   {
     path: 'register',
@@ -67,6 +82,7 @@ export const routes: Routes = [
     import('./pages/notifications/notifications.component')
       .then(m => m.NotificationsComponent),
 },
+
   {
   path: 'admin',
   loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
@@ -76,5 +92,6 @@ export const routes: Routes = [
     path: '**',
     redirectTo: '',
   },
+  
 
 ];
